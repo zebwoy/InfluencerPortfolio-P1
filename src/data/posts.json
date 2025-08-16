@@ -1,0 +1,30 @@
+[
+  {
+    "id": "clip1",
+    "type": "video",
+    "src": "/clip1.mp4",
+    "thumb": "/clip1.svg",
+    "platform": "Instagram",
+    "caption": "Soft morning routine",
+    "likes": 12,
+    "shareUrl": "https://instagram.com/"
+  },
+  {
+    "id": "ugc1",
+    "type": "image",
+    "src": "/ugc1.svg",
+    "platform": "Instagram",
+    "caption": "Clean, calm textures",
+    "likes": 34
+  },
+  {
+    "id": "clip3",
+    "type": "video",
+    "src": "/clip3.mp4",
+    "thumb": "/clip3.svg",
+    "platform": "YouTube",
+    "caption": "Evening wind-down",
+    "likes": 8,
+    "shareUrl": "https://youtube.com/"
+  }
+]
