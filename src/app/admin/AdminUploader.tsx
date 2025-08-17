@@ -60,10 +60,13 @@ export default function AdminUploader() {
     try {
       const response = await fetch("/api/admin/likes");
       if (response.ok) {
-        const data = await response.json();
+        type ApiRecent = { id: number; itemId: string; ipAddress: string; userAgent: string; createdAt: string; itemDeleted: boolean };
+        type ApiSummary = { likesActive: number; likesForDeletedItems: number };
+        type ApiTop = { item_id: string; count: number; item_deleted: boolean };
+        const data: { summary: ApiSummary; topItems: ApiTop[]; recent: ApiRecent[] } = await response.json();
         setLikesSummary(data.summary);
         setTopItems(data.topItems || []);
-        setLikesData((data.recent || []).map((r: any) => ({
+        setLikesData((data.recent || []).map((r) => ({
           timestamp: r.createdAt,
           itemId: r.itemId,
           action: "like",
