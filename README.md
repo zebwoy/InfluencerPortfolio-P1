@@ -13,6 +13,32 @@ A minimal, fast portfolio for a UGC creator in Skin & Hair Care. Built with Next
 - React Icons
 
 
+## Pages Overview (What you’ll find on the site)
+- Home (`/`)
+  - A short intro with a portrait, a simple headline, and quick links to social profiles.
+  - Clean, centered layout with subtle motion so visitors instantly understand who this is for.
+
+- About (`/about`)
+  - A concise description of the creator’s philosophy: real, minimal, practical content.
+  - Gentle animations make it feel alive without distraction.
+
+- Portfolio (`/portfolio`)
+  - The heart of the site. A grid of image and video posts with smooth reveal animations.
+  - Click any item to open a lightbox (fullscreen view) with type tags and date.
+  - Share button creates a direct link to the specific item (opens with `?item=ID`).
+  - Video posts (desktop): hover to play, move mouse away to pause. Download options and PiP are disabled to discourage casual saving.
+  - A lightweight stats strip shows total items, how many images, and how many videos.
+
+- Contact (`/contact`)
+  - Direct links to Instagram, WhatsApp, and Email.
+  - A simple contact form with name, email, and message to get in touch quickly.
+
+- Admin (`/admin`) — for local/serverful use
+  - Sign in screen with a neat dark theme.
+  - Uploader to add images/videos (saved to `public/uploads/`) and basic analytics.
+  - Note: This requires serverful APIs, so it’s intended for local use or a server host (not GitHub Pages).
+
+
 ## Core Features
 - Portfolio Grid (images/videos) with smooth reveal animations
 - Lightbox modal for focused viewing with type badge and metadata
@@ -20,29 +46,6 @@ A minimal, fast portfolio for a UGC creator in Skin & Hair Care. Built with Next
 - Video UX (desktop): hover to play, mouse leave to pause; protected controls (no download, disabled PiP, context menu disabled)
 - Likes (local CSV storage) via API endpoints for GET/POST (local/serverful only)
 - Admin section (login + uploader) to manage items and view basic analytics
-
-
-## Timeline of Changes (High‑Level)
-- Phase 1: Admin Login
-  - Added password visibility toggle (eye icon)
-  - Implemented minimal auth endpoint and cookie
-- Phase 2: Admin UI Refresh
-  - Full dark theme makeover for admin login and uploader
-  - Drag & drop uploads, progress, basic analytics table
-- Phase 3: Portfolio Page Enhancements
-  - Stats component responsiveness; kept horizontal layout with better spacing
-  - Implemented lightbox (Framer Motion) for focused viewing
-  - Share button logic: generated `?item=ID` links; handles open‑on‑load
-  - Fixed mobile lightbox sizing and close button ergonomics
-  - Fixed action button clicks (stopPropagation) to avoid accidental modal open
-- Phase 4: Video UX
-  - Hover play on enter, pause on leave (desktop)
-  - Protected videos: `controlsList="nodownload noremoteplayback"`, disabled PiP, blocked context menu
-- Phase 5: Branding Watermark
-  - Added dynamic watermark sourced from brand; later removed per feedback
-- Phase 6: Deployment
-  - Configured static export for GitHub Pages with `basePath: "/InfluencerPortfolio-P1"`
-  - GitHub Actions workflow to export static site and deploy to Pages
 
 
 ## Local Development
@@ -67,15 +70,6 @@ npm run export
 ```
 
 Open http://localhost:3000 during development.
-
-
-## Admin Panel (Local/Serverful Only)
-- Admin login (default credentials use environment variables or fallbacks)
-- Upload images/videos → saved into `public/uploads/`
-- Portfolio data stored in `src/data/portfolio.json`
-- Likes stored in `src/data/likes.csv`
-
-Note: API routes live under `src/app/api/**` and require a serverful runtime (Node). They are not executed on GitHub Pages.
 
 
 ## Deployment: GitHub Pages
