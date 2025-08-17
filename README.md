@@ -2,10 +2,6 @@
 
 A minimal, fast portfolio for a UGC creator in Skin & Hair Care. Built with Next.js (App Router), Tailwind CSS, and Framer Motion. Designed to feel calm, modern, and mobile‑first while supporting image and video posts, lightbox viewing, sharing, and likes.
 
-- Repo: [zebwoy/InfluencerPortfolio-P1](https://github.com/zebwoy/InfluencerPortfolio-P1)
-- Live (Netlify): add your Netlify site URL here
-
-
 ## Tech Stack
 - Next.js 15 (App Router) + TypeScript
 - Tailwind CSS
@@ -125,4 +121,4 @@ src/
 
 
 ## License
-MIT (or your preferred license).
+MIT
