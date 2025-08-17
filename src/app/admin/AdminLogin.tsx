@@ -27,6 +27,11 @@ export default function AdminLogin({ onLogin }: AdminLoginProps) {
       });
 
       if (response.ok) {
+        try {
+          if (typeof window !== "undefined") {
+            localStorage.setItem("admin-authed", "1");
+          }
+        } catch {}
         onLogin();
       } else {
         setError("Invalid credentials");

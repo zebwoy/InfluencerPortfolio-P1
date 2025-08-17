@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
-import { CiShare2 } from "react-icons/ci";
+import { FaHeart, FaRegHeart, FaShareAlt } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
 import { PortfolioItem } from "./ClientPortfolio";
 
@@ -369,11 +369,11 @@ function LikeButton({ itemId }: { itemId: string }) {
       } ${isPending ? "opacity-50 cursor-not-allowed" : "hover:scale-105"}`}
     >
       {isLiked ? (
-        <AiFillHeart className="text-white" size={22} />
+        <FaHeart className="text-white" size={24} />
       ) : (
-        <AiOutlineHeart className="text-gray-200" size={22} />
+        <FaRegHeart className="text-gray-200" size={24} />
       )}
-      <span className="text-sm sm:text-base lg:text-lg font-medium">{isLiked ? "Liked" : "Like"}</span>
+      <span className="text-sm sm:text-base lg:text-lg font-semibold">{isLiked ? "Liked" : "Like"}</span>
       {likeCount > 0 && (
         <span className={`px-2 py-1 rounded-lg text-xs sm:text-sm font-semibold ${
           isLiked ? "bg-white/20 text-white" : "bg-gray-600 text-gray-200"
@@ -470,8 +470,8 @@ function ShareButton({ itemId, item }: { itemId: string; item: PortfolioItem }) 
       data-share={itemId}
       className="flex-grow flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 lg:px-6 lg:py-3.5 min-h-[40px] sm:min-h-[44px] lg:min-h-[48px] rounded-xl bg-gray-700 text-gray-200 hover:bg-gray-600 border border-gray-600 transition-all duration-300 btn-premium hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
     >
-      <CiShare2 className="text-gray-200" size={22} />
-      <span className="text-sm sm:text-base lg:text-lg font-medium">{message}</span>
+      <FaShareAlt className="text-gray-200" size={22} />
+      <span className="text-sm sm:text-base lg:text-lg font-semibold">{message}</span>
       {shareCount !== null && (
         <span className="px-2 py-1 rounded-lg text-xs sm:text-sm font-semibold bg-gray-600 text-gray-200">{shareCount}</span>
       )}
