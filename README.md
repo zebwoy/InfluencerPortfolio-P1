@@ -1,4 +1,4 @@
-# Zeya UGC Portfolio (InfluencerPortfolio-P1)
+# Client UGC Portfolio (InfluencerPortfolio-P1)
 
 A minimal, fast portfolio for a UGC creator in Skin & Hair Care. Built with Next.js (App Router), Tailwind CSS, and Framer Motion. Designed to feel calm, modern, and mobile‑first while supporting image and video posts, lightbox viewing, sharing, and basic engagement (likes).
 
