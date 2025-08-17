@@ -411,7 +411,10 @@ function ShareButton({ itemId, item }: { itemId: string; item: PortfolioItem }) 
       const shareTitle = `Check out this amazing ${item.type} from my portfolio!`;
       const shareText = `I found this incredible piece that I think you'll love. Click to view it in full detail!`;
 
-      const canNative = navigator.share && navigator.canShare && navigator.canShare({ title: shareTitle, text: shareText, url: shareUrl });
+      const n = navigator as Navigator & {
+        canShare?: (data?: { title?: string; text?: string; url?: string }) => boolean;
+      };
+      const canNative = typeof n.share === 'function' && typeof n.canShare === 'function' && n.canShare({ title: shareTitle, text: shareText, url: shareUrl });
       if (canNative) {
         // Use native sharing on mobile devices
         await navigator.share({
