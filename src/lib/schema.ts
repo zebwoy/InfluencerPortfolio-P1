@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, bigserial } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, bigserial, boolean } from "drizzle-orm/pg-core";
 
 export const portfolioItems = pgTable("portfolio_items", {
   id: text("id").primaryKey(),
@@ -14,4 +14,6 @@ export const likes = pgTable("likes", {
   ipAddress: text("ip_address").notNull(),
   userAgent: text("user_agent"),
   createdAt: timestamp("created_at", { withTimezone: false }).notNull().defaultNow(),
+  itemDeleted: boolean("item_deleted").notNull().default(false),
+  deletedAt: timestamp("deleted_at", { withTimezone: false }),
 });

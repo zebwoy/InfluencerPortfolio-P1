@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { promises as fs } from "fs";
 import path from "path";
 import { unlink } from "fs/promises";
+import { db, ensureSchema } from "@/lib/db";
+import { portfolioItems, likes } from "@/lib/schema";
+import { and, eq } from "drizzle-orm";
 
 const PORTFOLIO_DATA_FILE = path.join(process.cwd(), "src/data/portfolio.json");
 
@@ -18,36 +21,21 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    await ensureSchema();
     const { id } = await params;
 
-    // Read current portfolio data
-    const portfolioData = await fs.readFile(PORTFOLIO_DATA_FILE, "utf-8");
-    const portfolio = JSON.parse(portfolioData);
+    // Soft-mark likes as deleted
+    const now = new Date().toISOString();
+    await db.update(likes).set({ itemDeleted: true as unknown as any, deletedAt: now as unknown as any }).where(eq(likes.itemId, id));
 
-    // Find the item to delete
-    const itemIndex = portfolio.items.findIndex((item: PortfolioItem) => item.id === id);
-    if (itemIndex === -1) {
-      return NextResponse.json(
-        { error: "Item not found" },
-        { status: 404 }
-      );
-    }
+    // Remove the portfolio item from DB if present
+    await db.delete(portfolioItems).where(eq(portfolioItems.id, id));
 
-    const item = portfolio.items[itemIndex];
-
-    // Delete the file from uploads directory
-    if (item.src) {
-      const filePath = path.join(process.cwd(), "public", item.src);
-      try {
-        await unlink(filePath);
-      } catch (error) {
-        console.warn("Could not delete file:", error);
-      }
-    }
-
-    // Remove item from portfolio data
-    portfolio.items.splice(itemIndex, 1);
-    await fs.writeFile(PORTFOLIO_DATA_FILE, JSON.stringify(portfolio, null, 2));
+    // Best effort: if the src was a local file (legacy), attempt delete
+    try {
+      const filePath = path.join(process.cwd(), "public", id);
+      await unlink(filePath);
+    } catch {}
 
     return NextResponse.json({ success: true });
   } catch (error) {

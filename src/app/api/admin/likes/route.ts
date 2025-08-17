@@ -1,75 +1,35 @@
 import { NextResponse } from "next/server";
-import { promises as fs } from "fs";
-import path from "path";
-
-const LIKES_CSV_FILE = path.join(process.cwd(), "src/data/likes.csv");
-
-interface LikeRecord {
-  timestamp: string;
-  itemId: string;
-  action: "like" | "unlike";
-  ipAddress: string;
-  userAgent: string;
-  location?: string;
-  country?: string;
-  city?: string;
-  timezone?: string;
-  referrer?: string;
-}
-
-interface CSVRecord {
-  [key: string]: string;
-}
-
-async function ensureLikesFile() {
-  try {
-    await fs.access(LIKES_CSV_FILE);
-  } catch {
-    // Create CSV file with headers if it doesn't exist
-    const headers = "timestamp,itemId,action,ipAddress,userAgent,location,country,city,timezone,referrer\n";
-    await fs.writeFile(LIKES_CSV_FILE, headers);
-  }
-}
+import { db, ensureSchema } from "@/lib/db";
+import { likes } from "@/lib/schema";
+import { desc, eq, sql } from "drizzle-orm";
 
 export async function GET() {
   try {
-    await ensureLikesFile();
+    await ensureSchema();
 
-    // Read CSV file
-    const likesData = await fs.readFile(LIKES_CSV_FILE, "utf-8");
-    const lines = likesData.split("\n").filter(line => line.trim());
-    
-    if (lines.length <= 1) {
-      // Only headers, no data
-      return NextResponse.json({ likes: [] });
-    }
+    const totalLikes = await db.select({ count: sql<number>`count(*)` }).from(likes).where(eq(likes.itemDeleted, false));
+    const totalLikesDeleted = await db.select({ count: sql<number>`count(*)` }).from(likes).where(eq(likes.itemDeleted, true));
 
-    const headers = lines[0].split(",");
-    const records: LikeRecord[] = lines.slice(1).map(line => {
-      const values = line.split(",");
-      const record: CSVRecord = {};
-      headers.forEach((header, index) => {
-        record[header] = values[index];
-      });
-      return {
-        timestamp: record.timestamp || "",
-        itemId: record.itemId || "",
-        action: (record.action as "like" | "unlike") || "like",
-        ipAddress: record.ipAddress || "",
-        userAgent: record.userAgent || "",
-        location: record.location,
-        country: record.country,
-        city: record.city,
-        timezone: record.timezone,
-        referrer: record.referrer,
-      };
+    const recent = await db
+      .select({ id: likes.id, itemId: likes.itemId, ipAddress: likes.ipAddress, userAgent: likes.userAgent, createdAt: likes.createdAt, itemDeleted: likes.itemDeleted })
+      .from(likes)
+      .orderBy(desc(likes.createdAt))
+      .limit(100);
+
+    const byItem = await db.execute(sql`SELECT item_id, COUNT(*)::int AS count, BOOL_OR(item_deleted) AS item_deleted FROM likes GROUP BY item_id ORDER BY count DESC LIMIT 20;`);
+
+    return NextResponse.json({
+      summary: {
+        likesActive: totalLikes[0]?.count ?? 0,
+        likesForDeletedItems: totalLikesDeleted[0]?.count ?? 0,
+      },
+      topItems: byItem.rows ?? [],
+      recent,
     });
-
-    return NextResponse.json({ likes: records });
   } catch (error) {
-    console.error("Error reading likes data:", error);
+    console.error("Error reading likes analytics:", error);
     return NextResponse.json(
-      { error: "Failed to load likes data" },
+      { error: "Failed to load likes analytics" },
       { status: 500 }
     );
   }

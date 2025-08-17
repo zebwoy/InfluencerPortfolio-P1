@@ -28,6 +28,8 @@ interface LikeRecord {
 export default function AdminUploader() {
   const [items, setItems] = useState<PortfolioItem[]>([]);
   const [likesData, setLikesData] = useState<LikeRecord[]>([]);
+  const [likesSummary, setLikesSummary] = useState<{ likesActive: number; likesForDeletedItems: number } | null>(null);
+  const [topItems, setTopItems] = useState<Array<{ item_id: string; count: number; item_deleted: boolean }>>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -59,7 +61,20 @@ export default function AdminUploader() {
       const response = await fetch("/api/admin/likes");
       if (response.ok) {
         const data = await response.json();
-        setLikesData(data.likes || []);
+        setLikesSummary(data.summary);
+        setTopItems(data.topItems || []);
+        setLikesData((data.recent || []).map((r: any) => ({
+          timestamp: r.createdAt,
+          itemId: r.itemId,
+          action: "like",
+          ipAddress: r.ipAddress,
+          userAgent: r.userAgent,
+          location: "",
+          country: "",
+          city: "",
+          timezone: "",
+          referrer: "",
+        })));
       }
     } catch (error) {
       console.error("Failed to load likes data:", error);
@@ -440,8 +455,51 @@ export default function AdminUploader() {
           {/* Analytics Tab */}
           {activeTab === "analytics" && (
             <div>
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-semibold text-gray-200">Likes Analytics</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                <div className="bg-gray-700/50 rounded-xl p-4 border border-gray-600">
+                  <div className="text-sm text-gray-400">Active Likes</div>
+                  <div className="text-2xl text-gray-200 font-semibold">{likesSummary?.likesActive ?? 0}</div>
+                </div>
+                <div className="bg-gray-700/50 rounded-xl p-4 border border-gray-600">
+                  <div className="text-sm text-gray-400">Likes For Deleted Items</div>
+                  <div className="text-2xl text-gray-200 font-semibold">{likesSummary?.likesForDeletedItems ?? 0}</div>
+                </div>
+                <div className="bg-gray-700/50 rounded-xl p-4 border border-gray-600">
+                  <div className="text-sm text-gray-400">Recent Likes (last 100)</div>
+                  <div className="text-2xl text-gray-200 font-semibold">{likesData.length}</div>
+                </div>
+              </div>
+
+              <h3 className="text-lg font-semibold text-gray-200 mb-3">Top Items by Likes</h3>
+              <div className="overflow-x-auto mb-8">
+                <table className="min-w-full divide-y divide-gray-600">
+                  <thead className="bg-gray-700/50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Item ID</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Likes</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-gray-800/30 divide-y divide-gray-600">
+                    {topItems.map((t) => (
+                      <tr key={t.item_id}>
+                        <td className="px-4 py-3 text-sm text-gray-200">{t.item_id}</td>
+                        <td className="px-4 py-3 text-sm text-gray-200">{t.count}</td>
+                        <td className="px-4 py-3 text-sm">
+                          {t.item_deleted ? (
+                            <span className="px-2 py-1 text-xs font-medium rounded-full bg-red-500/20 text-red-300 border border-red-500/30">Deleted</span>
+                          ) : (
+                            <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-500/20 text-green-300 border border-green-500/30">Active</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-lg font-semibold text-gray-200">Recent Likes</h2>
                 <button
                   onClick={downloadLikesCSV}
                   className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-4 py-2 rounded-lg hover:scale-[1.02] transition-all duration-200"
@@ -451,72 +509,27 @@ export default function AdminUploader() {
               </div>
 
               {likesData.length === 0 ? (
-                <div className="text-center py-8 text-gray-400">
-                  No likes data available yet.
-                </div>
+                <div className="text-center py-8 text-gray-400">No likes data available yet.</div>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-600">
                     <thead className="bg-gray-700/50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                          Timestamp
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                          Item ID
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                          Action
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                          IP Address
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                          Location
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                          Country
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                          City
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                          Timezone
-                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Timestamp</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Item ID</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">IP Address</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Status</th>
                       </tr>
                     </thead>
                     <tbody className="bg-gray-800/30 divide-y divide-gray-600">
-                      {likesData.slice(-50).reverse().map((like, index) => (
+                      {likesData.slice(0, 100).map((like, index) => (
                         <tr key={index} className="hover:bg-gray-700/50 transition-colors duration-200">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-200">
-                            {new Date(like.timestamp).toLocaleString()}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-200">
-                            {like.itemId}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                              like.action === "like" 
-                                ? "bg-green-500/20 text-green-300 border border-green-500/30" 
-                                : "bg-red-500/20 text-red-300 border border-red-500/30"
-                            }`}>
-                              {like.action}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-200">
-                            {like.ipAddress}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-200">
-                            {like.location || "Unknown"}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-200">
-                            {like.country || "Unknown"}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-200">
-                            {like.city || "Unknown"}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-200">
-                            {like.timezone || "Unknown"}
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-200">{new Date(like.timestamp).toLocaleString()}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-200">{like.itemId}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-200">{like.ipAddress}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            {/* We don't have per-row deleted marker here; top table shows aggregated status */}
+                            <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">Recorded</span>
                           </td>
                         </tr>
                       ))}
