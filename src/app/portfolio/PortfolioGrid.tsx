@@ -10,9 +10,10 @@ import { PortfolioItem } from "./ClientPortfolio";
 interface Props {
   items: PortfolioItem[];
   initialItemId?: string | null;
+  uiPreset?: "compact" | "detailed";
 }
 
-export default function PortfolioGrid({ items, initialItemId }: Props) {
+export default function PortfolioGrid({ items, initialItemId, uiPreset = "detailed" }: Props) {
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -94,11 +95,15 @@ export default function PortfolioGrid({ items, initialItemId }: Props) {
             
             {/* Action Buttons Section */}
             <div className="p-4 bg-gray-900/80 backdrop-blur-sm border-t border-gray-800/50">
-              <div className="grid grid-cols-2 gap-3 sm:gap-4">
+              <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:gap-4">
                 {/* Like Button */}
-                <LikeButton itemId={item.id} />
+                <LikeButton itemId={item.id} uiPreset={uiPreset} />
                 {/* Share Button */}
-                <ShareButton itemId={item.id} item={item} />
+                <ShareButton itemId={item.id} item={item} uiPreset={uiPreset} />
+                {/* More (overflow) */}
+                <div className="col-span-2">
+                  <MoreActions item={item} />
+                </div>
               </div>
             </div>
           </motion.article>
@@ -186,6 +191,32 @@ export default function PortfolioGrid({ items, initialItemId }: Props) {
         )}
       </AnimatePresence>
     </>
+  );
+}
+
+function MoreActions({ item }: { item: PortfolioItem }) {
+  return (
+    <div className="w-full flex items-center justify-center gap-3 px-3 py-2 text-gray-300">
+      <button
+        className="px-3 py-2 rounded-lg bg-gray-800/80 hover:bg-gray-700 border border-gray-700 text-sm font-medium"
+        onClick={(e) => {
+          e.stopPropagation();
+          const url = `${window.location.origin}/portfolio?item=${item.id}`;
+          navigator.clipboard.writeText(url).catch(() => {});
+        }}
+      >
+        Copy Link
+      </button>
+      <a
+        href={item.src}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="px-3 py-2 rounded-lg bg-gray-800/80 hover:bg-gray-700 border border-gray-700 text-sm font-medium"
+        onClick={(e) => e.stopPropagation()}
+      >
+        Open Source
+      </a>
+    </div>
   );
 }
 
@@ -301,7 +332,7 @@ function VideoCard({ src, poster }: { src: string; poster?: string }) {
   );
 }
 
-function LikeButton({ itemId }: { itemId: string }) {
+function LikeButton({ itemId, uiPreset }: { itemId: string; uiPreset: "compact" | "detailed" }) {
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
   const [isPending, setIsPending] = useState(false);
@@ -372,9 +403,9 @@ function LikeButton({ itemId }: { itemId: string }) {
       ) : (
         <FaRegHeart className="text-gray-200" size={24} />
       )}
-      <span className="text-sm sm:text-base lg:text-lg font-semibold">{isLiked ? "Liked" : "Like"}</span>
+      <span className={`font-semibold ${uiPreset === "compact" ? "hidden sm:inline text-base lg:text-lg" : "text-sm sm:text-base lg:text-lg"}`}>{isLiked ? "Liked" : "Like"}</span>
       {likeCount > 0 && (
-        <span className={`px-2 sm:px-2.5 py-1 rounded-lg text-xs sm:text-sm font-bold ${
+        <span className={`px-2 sm:px-2.5 py-1 rounded-lg font-bold ${uiPreset === "compact" ? "hidden sm:inline text-xs sm:text-sm" : "text-xs sm:text-sm"} ${
           isLiked ? "bg-white/25 text-white" : "bg-gray-600/90 text-gray-100"
         }`}>{likeCount}</span>
       )}
@@ -382,7 +413,7 @@ function LikeButton({ itemId }: { itemId: string }) {
   );
 }
 
-function ShareButton({ itemId, item }: { itemId: string; item: PortfolioItem }) {
+function ShareButton({ itemId, item, uiPreset }: { itemId: string; item: PortfolioItem; uiPreset: "compact" | "detailed" }) {
   const [isSharing, setIsSharing] = useState(false);
   const [message, setMessage] = useState("Share");
   const [shareCount, setShareCount] = useState<number | null>(null);
@@ -470,9 +501,9 @@ function ShareButton({ itemId, item }: { itemId: string; item: PortfolioItem }) 
       className="w-full flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 lg:px-6 lg:py-3.5 min-h-[44px] sm:min-h-[48px] lg:min-h-[52px] rounded-xl bg-gray-700 text-gray-200 hover:bg-gray-600 border border-gray-600 transition-all duration-300 btn-premium hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
     >
       <FaShareAlt className="text-gray-200" size={22} />
-      <span className="text-sm sm:text-base lg:text-lg font-semibold">{message}</span>
+      <span className={`font-semibold ${uiPreset === "compact" ? "hidden sm:inline text-base lg:text-lg" : "text-sm sm:text-base lg:text-lg"}`}>{message}</span>
       {shareCount !== null && (
-        <span className="px-2 sm:px-2.5 py-1 rounded-lg text-xs sm:text-sm font-bold bg-gray-600/90 text-gray-100">{shareCount}</span>
+        <span className={`px-2 sm:px-2.5 py-1 rounded-lg font-bold bg-gray-600/90 text-gray-100 ${uiPreset === "compact" ? "hidden sm:inline text-xs sm:text-sm" : "text-xs sm:text-sm"}`}>{shareCount}</span>
       )}
     </button>
   );
