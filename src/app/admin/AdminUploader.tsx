@@ -65,7 +65,8 @@ export default function AdminUploader() {
         type ApiRecent = { id: number; itemId: string; ipAddress: string; userAgent: string; createdAt: string; itemDeleted: boolean };
         type ApiSummary = { likesActive: number; likesForDeletedItems: number };
         type ApiTop = { item_id: string; count: number; item_deleted: boolean };
-        const data: { summary: ApiSummary & { sharesActive?: number; sharesForDeletedItems?: number }; topItems: ApiTop[]; topShared?: ApiTop[]; recent: ApiRecent[]; recentShares?: any[] } = await response.json();
+        type ApiRecentShare = { id: number; itemId: string; ipAddress: string; userAgent: string; method?: string; createdAt: string; itemDeleted: boolean };
+        const data: { summary: ApiSummary & { sharesActive?: number; sharesForDeletedItems?: number }; topItems: ApiTop[]; topShared?: ApiTop[]; recent: ApiRecent[]; recentShares?: ApiRecentShare[] } = await response.json();
         setLikesSummary(data.summary);
         setTopItems(data.topItems || []);
         setTopShared(data.topShared || []);
@@ -81,7 +82,7 @@ export default function AdminUploader() {
           timezone: "",
           referrer: "",
         })));
-        setRecentShares((data.recentShares || []).map((r: any) => ({ itemId: r.itemId, ipAddress: r.ipAddress, method: r.method, createdAt: r.createdAt })));
+        setRecentShares((data.recentShares || []).map((r) => ({ itemId: r.itemId, ipAddress: r.ipAddress, method: r.method, createdAt: r.createdAt })));
       }
     } catch (error) {
       console.error("Failed to load likes data:", error);
