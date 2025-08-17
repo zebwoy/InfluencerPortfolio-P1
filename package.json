@@ -9,6 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.0.1",
+    "cloudinary": "^2.7.0",
+    "drizzle-orm": "^0.44.4",
     "framer-motion": "^12.23.12",
     "lottie-react": "^2.4.1",
     "next": "15.4.6",
