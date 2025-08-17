@@ -2,7 +2,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { useState, useEffect, useCallback, useRef } from "react";
-import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 import { FaHeart, FaRegHeart, FaShareAlt } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
 import { PortfolioItem } from "./ClientPortfolio";
@@ -177,8 +176,8 @@ export default function PortfolioGrid({ items, initialItemId, uiPreset = "detail
                   
                   {/* Action Buttons in Modal */}
                   <div className="flex items-center space-x-2 sm:space-x-3">
-                    <LikeButton itemId={selectedItem.id} />
-                    <ShareButton itemId={selectedItem.id} item={selectedItem} />
+                    <LikeButton itemId={selectedItem.id} uiPreset={uiPreset} />
+                    <ShareButton itemId={selectedItem.id} item={selectedItem} uiPreset={uiPreset} />
                   </div>
                 </div>
               </div>
