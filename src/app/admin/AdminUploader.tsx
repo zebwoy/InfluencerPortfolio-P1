@@ -33,6 +33,9 @@ export default function AdminUploader() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [dragActive, setDragActive] = useState(false);
   const [activeTab, setActiveTab] = useState<"upload" | "analytics">("upload");
+  const [pastedUrl, setPastedUrl] = useState("");
+  const [pastedType, setPastedType] = useState<"image" | "video">("video");
+  const [isAddingUrl, setIsAddingUrl] = useState(false);
 
   useEffect(() => {
     loadPortfolioItems();
@@ -167,6 +170,28 @@ export default function AdminUploader() {
     window.URL.revokeObjectURL(url);
   };
 
+  const addByUrl = async () => {
+    if (!pastedUrl) return;
+    setIsAddingUrl(true);
+    try {
+      const guessType: "image" | "video" = pastedType ?? (pastedUrl.match(/\.(mp4|webm|mov|m4v)(\?|$)/i) ? "video" : "image");
+      const res = await fetch("/api/portfolio/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: pastedUrl, type: guessType })
+      });
+      if (!res.ok) throw new Error("Failed to save URL");
+      setPastedUrl("");
+      await loadPortfolioItems();
+      alert("Item added by URL!");
+    } catch (e) {
+      console.error(e);
+      alert("Failed to add URL. Check it and try again.");
+    } finally {
+      setIsAddingUrl(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 p-6">
       <div className="max-w-6xl mx-auto">
@@ -249,6 +274,36 @@ export default function AdminUploader() {
                       </p>
                     </div>
                   </div>
+                </div>
+
+                {/* Paste Cloudinary URL */}
+                <div className="mt-6 space-y-3">
+                  <h3 className="text-md font-medium text-gray-200">Or add by Cloudinary URL</h3>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <input
+                      type="url"
+                      placeholder="https://res.cloudinary.com/.../upload/.../file.mp4"
+                      value={pastedUrl}
+                      onChange={(e) => setPastedUrl(e.target.value)}
+                      className="flex-1 h-10 rounded-md border border-white/20 bg-transparent px-3 text-gray-100 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-white/30"
+                    />
+                    <select
+                      value={pastedType}
+                      onChange={(e) => setPastedType(e.target.value as "image" | "video")}
+                      className="h-10 rounded-md border border-white/20 bg-transparent px-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-white/30"
+                    >
+                      <option value="video">video</option>
+                      <option value="image">image</option>
+                    </select>
+                    <button
+                      onClick={addByUrl}
+                      disabled={isAddingUrl || !pastedUrl}
+                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isAddingUrl ? "Adding..." : "Add by URL"}
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-400">Use the secure Cloudinary URL (https://res.cloudinary.com/...). Large files should be uploaded to Cloudinary first, then pasted here.</p>
                 </div>
 
                 {/* Selected Files */}
