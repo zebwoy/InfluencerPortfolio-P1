@@ -100,10 +100,6 @@ export default function PortfolioGrid({ items, initialItemId, uiPreset = "detail
                 <LikeButton itemId={item.id} uiPreset={uiPreset} />
                 {/* Share Button */}
                 <ShareButton itemId={item.id} item={item} uiPreset={uiPreset} />
-                {/* More (overflow) */}
-                <div className="col-span-2">
-                  <MoreActions item={item} />
-                </div>
               </div>
             </div>
           </motion.article>
@@ -194,31 +190,7 @@ export default function PortfolioGrid({ items, initialItemId, uiPreset = "detail
   );
 }
 
-function MoreActions({ item }: { item: PortfolioItem }) {
-  return (
-    <div className="w-full flex items-center justify-center gap-3 px-3 py-2 text-gray-300">
-      <button
-        className="px-3 py-2 rounded-lg bg-gray-800/80 hover:bg-gray-700 border border-gray-700 text-sm font-medium"
-        onClick={(e) => {
-          e.stopPropagation();
-          const url = `${window.location.origin}/portfolio?item=${item.id}`;
-          navigator.clipboard.writeText(url).catch(() => {});
-        }}
-      >
-        Copy Link
-      </button>
-      <a
-        href={item.src}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="px-3 py-2 rounded-lg bg-gray-800/80 hover:bg-gray-700 border border-gray-700 text-sm font-medium"
-        onClick={(e) => e.stopPropagation()}
-      >
-        Open Source
-      </a>
-    </div>
-  );
-}
+// (Removed MoreActions per request)
 
 function VideoCard({ src, poster }: { src: string; poster?: string }) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -392,20 +364,20 @@ function LikeButton({ itemId, uiPreset }: { itemId: string; uiPreset: "compact" 
         handleLike();
       }}
       disabled={isPending}
-      className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 lg:px-6 lg:py-3.5 min-h-[44px] sm:min-h-[48px] lg:min-h-[52px] rounded-xl transition-all duration-300 btn-premium ${
+      className={`w-full flex items-center justify-center gap-2 sm:gap-2.5 lg:gap-3 px-3.5 py-2.5 sm:px-4 sm:py-3 lg:px-5 lg:py-3.5 min-h-[44px] sm:min-h-[48px] lg:min-h-[52px] rounded-xl transition-all duration-300 btn-premium ${
         isLiked
           ? "bg-gradient-to-r from-red-500 to-pink-500 text-white shadow-lg shadow-red-500/25"
           : "bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600"
       } ${isPending ? "opacity-50 cursor-not-allowed" : "hover:scale-105"}`}
     >
       {isLiked ? (
-        <FaHeart className="text-white" size={24} />
+        <FaHeart className="text-white" size={20} />
       ) : (
-        <FaRegHeart className="text-gray-200" size={24} />
+        <FaRegHeart className="text-gray-200" size={20} />
       )}
-      <span className={`font-semibold ${uiPreset === "compact" ? "hidden sm:inline text-base lg:text-lg" : "text-sm sm:text-base lg:text-lg"}`}>{isLiked ? "Liked" : "Like"}</span>
+      <span className={`truncate font-semibold ${uiPreset === "compact" ? "hidden sm:inline text-[15px] sm:text-base lg:text-lg" : "text-sm sm:text-[15px] lg:text-lg"}`}>{isLiked ? "Liked" : "Like"}</span>
       {likeCount > 0 && (
-        <span className={`px-2 sm:px-2.5 py-1 rounded-lg font-bold ${uiPreset === "compact" ? "hidden sm:inline text-xs sm:text-sm" : "text-xs sm:text-sm"} ${
+        <span className={`px-1.5 sm:px-2 py-0.5 rounded-md font-bold ${uiPreset === "compact" ? "hidden sm:inline text-[11px] sm:text-xs" : "text-[11px] sm:text-xs"} ${
           isLiked ? "bg-white/25 text-white" : "bg-gray-600/90 text-gray-100"
         }`}>{likeCount}</span>
       )}
@@ -498,12 +470,12 @@ function ShareButton({ itemId, item, uiPreset }: { itemId: string; item: Portfol
       }}
       disabled={isSharing}
       data-share={itemId}
-      className="w-full flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 lg:px-6 lg:py-3.5 min-h-[44px] sm:min-h-[48px] lg:min-h-[52px] rounded-xl bg-gray-700 text-gray-200 hover:bg-gray-600 border border-gray-600 transition-all duration-300 btn-premium hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+      className="w-full flex items-center justify-center gap-2 sm:gap-2.5 lg:gap-3 px-3.5 py-2.5 sm:px-4 sm:py-3 lg:px-5 lg:py-3.5 min-h-[44px] sm:min-h-[48px] lg:min-h-[52px] rounded-xl bg-gray-700 text-gray-200 hover:bg-gray-600 border border-gray-600 transition-all duration-300 btn-premium hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
     >
-      <FaShareAlt className="text-gray-200" size={22} />
-      <span className={`font-semibold ${uiPreset === "compact" ? "hidden sm:inline text-base lg:text-lg" : "text-sm sm:text-base lg:text-lg"}`}>{message}</span>
+      <FaShareAlt className="text-gray-200" size={18} />
+      <span className={`truncate font-semibold ${uiPreset === "compact" ? "hidden sm:inline text-[15px] sm:text-base lg:text-lg" : "text-sm sm:text-[15px] lg:text-lg"}`}>{message}</span>
       {shareCount !== null && (
-        <span className={`px-2 sm:px-2.5 py-1 rounded-lg font-bold bg-gray-600/90 text-gray-100 ${uiPreset === "compact" ? "hidden sm:inline text-xs sm:text-sm" : "text-xs sm:text-sm"}`}>{shareCount}</span>
+        <span className={`px-1.5 sm:px-2 py-0.5 rounded-md font-bold bg-gray-600/90 text-gray-100 ${uiPreset === "compact" ? "hidden sm:inline text-[11px] sm:text-xs" : "text-[11px] sm:text-xs"}`}>{shareCount}</span>
       )}
     </button>
   );
