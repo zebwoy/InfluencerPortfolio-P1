@@ -33,10 +33,23 @@ export async function ensureSchema(): Promise<void> {
 			deleted_at TIMESTAMP
 		);
 	`;
-	// Attempt to drop ON DELETE CASCADE FK if it exists, to retain likes after item deletion
-	try {
-		await sql`ALTER TABLE likes DROP CONSTRAINT IF EXISTS likes_item_id_fkey;`;
-	} catch {}
-	// Optionally, do not recreate FK to allow orphaned likes; if you want a FK without cascade, uncomment below
-	// try { await sql`ALTER TABLE likes ADD CONSTRAINT likes_item_id_fkey FOREIGN KEY (item_id) REFERENCES portfolio_items(id);`; } catch {}
+	await sql`ALTER TABLE likes ADD COLUMN IF NOT EXISTS item_deleted BOOLEAN NOT NULL DEFAULT FALSE;`;
+	await sql`ALTER TABLE likes ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP NULL;`;
+	try { await sql`ALTER TABLE likes DROP CONSTRAINT IF EXISTS likes_item_id_fkey;`; } catch {}
+
+	await sql`
+		CREATE TABLE IF NOT EXISTS shares (
+			id BIGSERIAL PRIMARY KEY,
+			item_id TEXT NOT NULL,
+			ip_address TEXT NOT NULL,
+			user_agent TEXT,
+			method TEXT,
+			created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+			item_deleted BOOLEAN NOT NULL DEFAULT FALSE,
+			deleted_at TIMESTAMP
+		);
+	`;
+	await sql`ALTER TABLE shares ADD COLUMN IF NOT EXISTS item_deleted BOOLEAN NOT NULL DEFAULT FALSE;`;
+	await sql`ALTER TABLE shares ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP NULL;`;
+	try { await sql`ALTER TABLE shares DROP CONSTRAINT IF EXISTS shares_item_id_fkey;`; } catch {}
 }

@@ -17,3 +17,14 @@ export const likes = pgTable("likes", {
   itemDeleted: boolean("item_deleted").notNull().default(false),
   deletedAt: timestamp("deleted_at", { withTimezone: false }),
 });
+
+export const shares = pgTable("shares", {
+  id: bigserial("id", { mode: "number" }).primaryKey(),
+  itemId: text("item_id").notNull(),
+  ipAddress: text("ip_address").notNull(),
+  userAgent: text("user_agent"),
+  method: text("method"), // 'native' | 'copy'
+  createdAt: timestamp("created_at", { withTimezone: false }).notNull().defaultNow(),
+  itemDeleted: boolean("item_deleted").notNull().default(false),
+  deletedAt: timestamp("deleted_at", { withTimezone: false }),
+});

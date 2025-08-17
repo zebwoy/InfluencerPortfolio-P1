@@ -121,7 +121,7 @@ export default function PortfolioGrid({ items, initialItemId }: Props) {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="relative w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] bg-white rounded-lg sm:rounded-2xl overflow-hidden shadow-2xl"
+              className="relative w-full max-w-[min(95vw,1200px)] max-h-[92vh] md:max-h-[90vh] bg-white rounded-lg sm:rounded-2xl overflow-hidden shadow-2xl flex flex-col"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Close Button */}
@@ -133,7 +133,7 @@ export default function PortfolioGrid({ items, initialItemId }: Props) {
               </button>
 
               {/* Media Content */}
-              <div className="relative aspect-square sm:aspect-[4/3] lg:aspect-[16/9] bg-gray-900">
+              <div className="relative w-full bg-gray-900 h-[58vh] md:h-[62vh] lg:h-[68vh]">
                 {selectedItem.type === "image" ? (
                   <Image
                     src={selectedItem.src}
@@ -160,7 +160,7 @@ export default function PortfolioGrid({ items, initialItemId }: Props) {
               </div>
 
               {/* Item Info */}
-              <div className="p-3 sm:p-6 bg-white">
+              <div className="p-3 sm:p-5 bg-white">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
                   <div>
                     <span className={`px-2 py-1 sm:px-3 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium ${
@@ -305,7 +305,7 @@ function VideoCard({ src, poster }: { src: string; poster?: string }) {
 function LikeButton({ itemId }: { itemId: string }) {
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isPending, setIsPending] = useState(false);
 
   const loadLikeData = useCallback(async () => {
     try {
@@ -325,23 +325,33 @@ function LikeButton({ itemId }: { itemId: string }) {
   }, [loadLikeData]);
 
   const handleLike = async () => {
-    if (isLoading) return;
-    setIsLoading(true);
+    if (isPending) return;
+    // Optimistic update for instant feedback
+    const nextLiked = !isLiked;
+    const prevLiked = isLiked;
+    const prevCount = likeCount;
+    const nextCount = nextLiked ? likeCount + 1 : Math.max(0, likeCount - 1);
+    setIsLiked(nextLiked);
+    setLikeCount(nextCount);
+    setIsPending(true);
+
     try {
       const response = await fetch(`/api/portfolio/${itemId}/likes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: isLiked ? "unlike" : "like" }),
+        body: JSON.stringify({ action: nextLiked ? "like" : "unlike" }),
       });
-      if (response.ok) {
-        const newLikeCount = isLiked ? likeCount - 1 : likeCount + 1;
-        setLikeCount(newLikeCount);
-        setIsLiked(!isLiked);
+      if (!response.ok) {
+        // Revert on failure
+        setIsLiked(prevLiked);
+        setLikeCount(prevCount);
       }
     } catch (error) {
       console.error("Failed to update like:", error);
+      setIsLiked(prevLiked);
+      setLikeCount(prevCount);
     } finally {
-      setIsLoading(false);
+      setIsPending(false);
     }
   };
 
@@ -351,21 +361,21 @@ function LikeButton({ itemId }: { itemId: string }) {
         e.stopPropagation(); // Prevent triggering the parent article click
         handleLike();
       }}
-      disabled={isLoading}
-      className={`flex-grow flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl transition-all duration-300 btn-premium ${
+      disabled={isPending}
+      className={`flex-grow flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 lg:px-6 lg:py-3.5 min-h-[40px] sm:min-h-[44px] lg:min-h-[48px] rounded-xl transition-all duration-300 btn-premium ${
         isLiked
           ? "bg-gradient-to-r from-red-500 to-pink-500 text-white shadow-lg shadow-red-500/25"
           : "bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600"
-      } ${isLoading ? "opacity-50 cursor-not-allowed" : "hover:scale-105"}`}
+      } ${isPending ? "opacity-50 cursor-not-allowed" : "hover:scale-105"}`}
     >
       {isLiked ? (
-        <AiFillHeart size={18} className="text-white" />
+        <AiFillHeart className="text-white" size={22} />
       ) : (
-        <AiOutlineHeart size={18} className="text-gray-400" />
+        <AiOutlineHeart className="text-gray-200" size={22} />
       )}
-      <span className="text-sm font-medium">{isLiked ? "Liked" : "Like"}</span>
+      <span className="text-sm sm:text-base lg:text-lg font-medium">{isLiked ? "Liked" : "Like"}</span>
       {likeCount > 0 && (
-        <span className={`px-2 py-1 rounded-lg text-xs font-semibold ${
+        <span className={`px-2 py-1 rounded-lg text-xs sm:text-sm font-semibold ${
           isLiked ? "bg-white/20 text-white" : "bg-gray-600 text-gray-200"
         }`}>{likeCount}</span>
       )}
@@ -376,6 +386,20 @@ function LikeButton({ itemId }: { itemId: string }) {
 function ShareButton({ itemId, item }: { itemId: string; item: PortfolioItem }) {
   const [isSharing, setIsSharing] = useState(false);
   const [message, setMessage] = useState("Share");
+  const [shareCount, setShareCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    const loadShares = async () => {
+      try {
+        const r = await fetch(`/api/portfolio/${itemId}/shares`);
+        if (r.ok) {
+          const data = await r.json();
+          setShareCount(typeof data.shareCount === 'number' ? data.shareCount : 0);
+        }
+      } catch {}
+    };
+    loadShares();
+  }, [itemId]);
 
   const handleShare = async () => {
     if (isSharing) return;
@@ -387,7 +411,8 @@ function ShareButton({ itemId, item }: { itemId: string; item: PortfolioItem }) 
       const shareTitle = `Check out this amazing ${item.type} from my portfolio!`;
       const shareText = `I found this incredible piece that I think you'll love. Click to view it in full detail!`;
 
-      if (navigator.share && navigator.canShare && navigator.canShare({ title: shareTitle, text: shareText, url: shareUrl })) {
+      const canNative = navigator.share && navigator.canShare && navigator.canShare({ title: shareTitle, text: shareText, url: shareUrl });
+      if (canNative) {
         // Use native sharing on mobile devices
         await navigator.share({
           title: shareTitle,
@@ -396,6 +421,9 @@ function ShareButton({ itemId, item }: { itemId: string; item: PortfolioItem }) 
         });
         setMessage("Shared!");
         setTimeout(() => setMessage("Share"), 2000);
+        // Log share
+        fetch(`/api/portfolio/${itemId}/shares`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ method: 'native' }) }).catch(() => {});
+        setShareCount((c) => (c ?? 0) + 1);
       } else {
         // Fallback: copy to clipboard
         await navigator.clipboard.writeText(shareUrl);
@@ -404,6 +432,9 @@ function ShareButton({ itemId, item }: { itemId: string; item: PortfolioItem }) 
         
         // Show a toast notification
         showToast("Link copied to clipboard! Share this link to show the specific item.");
+        // Log share
+        fetch(`/api/portfolio/${itemId}/shares`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ method: 'copy' }) }).catch(() => {});
+        setShareCount((c) => (c ?? 0) + 1);
       }
     } catch (error) {
       console.error("Share failed:", error);
@@ -434,10 +465,13 @@ function ShareButton({ itemId, item }: { itemId: string; item: PortfolioItem }) 
       }}
       disabled={isSharing}
       data-share={itemId}
-      className="flex-grow flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600 transition-all duration-300 btn-premium hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+      className="flex-grow flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 lg:px-6 lg:py-3.5 min-h-[40px] sm:min-h-[44px] lg:min-h-[48px] rounded-xl bg-gray-700 text-gray-200 hover:bg-gray-600 border border-gray-600 transition-all duration-300 btn-premium hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
     >
-      <CiShare2 size={18} className="text-gray-400" />
-      <span className="text-sm font-medium">{message}</span>
+      <CiShare2 className="text-gray-200" size={22} />
+      <span className="text-sm sm:text-base lg:text-lg font-medium">{message}</span>
+      {shareCount !== null && (
+        <span className="px-2 py-1 rounded-lg text-xs sm:text-sm font-semibold bg-gray-600 text-gray-200">{shareCount}</span>
+      )}
     </button>
   );
 } 

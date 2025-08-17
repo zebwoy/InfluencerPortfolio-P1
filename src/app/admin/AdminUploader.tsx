@@ -28,8 +28,10 @@ interface LikeRecord {
 export default function AdminUploader() {
   const [items, setItems] = useState<PortfolioItem[]>([]);
   const [likesData, setLikesData] = useState<LikeRecord[]>([]);
-  const [likesSummary, setLikesSummary] = useState<{ likesActive: number; likesForDeletedItems: number } | null>(null);
+  const [likesSummary, setLikesSummary] = useState<{ likesActive: number; likesForDeletedItems: number; sharesActive?: number; sharesForDeletedItems?: number } | null>(null);
   const [topItems, setTopItems] = useState<Array<{ item_id: string; count: number; item_deleted: boolean }>>([]);
+  const [topShared, setTopShared] = useState<Array<{ item_id: string; count: number; item_deleted: boolean }>>([]);
+  const [recentShares, setRecentShares] = useState<Array<{ itemId: string; ipAddress: string; method?: string; createdAt: string }>>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -63,9 +65,10 @@ export default function AdminUploader() {
         type ApiRecent = { id: number; itemId: string; ipAddress: string; userAgent: string; createdAt: string; itemDeleted: boolean };
         type ApiSummary = { likesActive: number; likesForDeletedItems: number };
         type ApiTop = { item_id: string; count: number; item_deleted: boolean };
-        const data: { summary: ApiSummary; topItems: ApiTop[]; recent: ApiRecent[] } = await response.json();
+        const data: { summary: ApiSummary & { sharesActive?: number; sharesForDeletedItems?: number }; topItems: ApiTop[]; topShared?: ApiTop[]; recent: ApiRecent[]; recentShares?: any[] } = await response.json();
         setLikesSummary(data.summary);
         setTopItems(data.topItems || []);
+        setTopShared(data.topShared || []);
         setLikesData((data.recent || []).map((r) => ({
           timestamp: r.createdAt,
           itemId: r.itemId,
@@ -78,6 +81,7 @@ export default function AdminUploader() {
           timezone: "",
           referrer: "",
         })));
+        setRecentShares((data.recentShares || []).map((r: any) => ({ itemId: r.itemId, ipAddress: r.ipAddress, method: r.method, createdAt: r.createdAt })));
       }
     } catch (error) {
       console.error("Failed to load likes data:", error);
@@ -458,7 +462,7 @@ export default function AdminUploader() {
           {/* Analytics Tab */}
           {activeTab === "analytics" && (
             <div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
                 <div className="bg-gray-700/50 rounded-xl p-4 border border-gray-600">
                   <div className="text-sm text-gray-400">Active Likes</div>
                   <div className="text-2xl text-gray-200 font-semibold">{likesSummary?.likesActive ?? 0}</div>
@@ -468,8 +472,12 @@ export default function AdminUploader() {
                   <div className="text-2xl text-gray-200 font-semibold">{likesSummary?.likesForDeletedItems ?? 0}</div>
                 </div>
                 <div className="bg-gray-700/50 rounded-xl p-4 border border-gray-600">
-                  <div className="text-sm text-gray-400">Recent Likes (last 100)</div>
-                  <div className="text-2xl text-gray-200 font-semibold">{likesData.length}</div>
+                  <div className="text-sm text-gray-400">Active Shares</div>
+                  <div className="text-2xl text-gray-200 font-semibold">{likesSummary?.sharesActive ?? 0}</div>
+                </div>
+                <div className="bg-gray-700/50 rounded-xl p-4 border border-gray-600">
+                  <div className="text-sm text-gray-400">Shares For Deleted Items</div>
+                  <div className="text-2xl text-gray-200 font-semibold">{likesSummary?.sharesForDeletedItems ?? 0}</div>
                 </div>
               </div>
 
@@ -485,6 +493,34 @@ export default function AdminUploader() {
                   </thead>
                   <tbody className="bg-gray-800/30 divide-y divide-gray-600">
                     {topItems.map((t) => (
+                      <tr key={t.item_id}>
+                        <td className="px-4 py-3 text-sm text-gray-200">{t.item_id}</td>
+                        <td className="px-4 py-3 text-sm text-gray-200">{t.count}</td>
+                        <td className="px-4 py-3 text-sm">
+                          {t.item_deleted ? (
+                            <span className="px-2 py-1 text-xs font-medium rounded-full bg-red-500/20 text-red-300 border border-red-500/30">Deleted</span>
+                          ) : (
+                            <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-500/20 text-green-300 border border-green-500/30">Active</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <h3 className="text-lg font-semibold text-gray-200 mb-3">Top Items by Shares</h3>
+              <div className="overflow-x-auto mb-8">
+                <table className="min-w-full divide-y divide-gray-600">
+                  <thead className="bg-gray-700/50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Item ID</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Shares</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-gray-800/30 divide-y divide-gray-600">
+                    {topShared.map((t) => (
                       <tr key={t.item_id}>
                         <td className="px-4 py-3 text-sm text-gray-200">{t.item_id}</td>
                         <td className="px-4 py-3 text-sm text-gray-200">{t.count}</td>
@@ -534,6 +570,34 @@ export default function AdminUploader() {
                             {/* We don't have per-row deleted marker here; top table shows aggregated status */}
                             <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">Recorded</span>
                           </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              <h2 className="text-lg font-semibold text-gray-200 mt-8 mb-3">Recent Shares</h2>
+              {recentShares.length === 0 ? (
+                <div className="text-center py-6 text-gray-400">No shares yet.</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-600">
+                    <thead className="bg-gray-700/50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Timestamp</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Item ID</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">IP Address</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Method</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-gray-800/30 divide-y divide-gray-600">
+                      {recentShares.map((s, index) => (
+                        <tr key={index} className="hover:bg-gray-700/50 transition-colors duration-200">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-200">{new Date(s.createdAt).toLocaleString()}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-200">{s.itemId}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-200">{s.ipAddress}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-200">{s.method || 'copy'}</td>
                         </tr>
                       ))}
                     </tbody>
