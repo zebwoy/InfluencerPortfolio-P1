@@ -17,12 +17,10 @@ export default function ClientPortfolio() {
   const [initialItemId, setInitialItemId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check for item parameter in URL (for shared links)
     const urlParams = new URLSearchParams(window.location.search);
     const itemParam = urlParams.get('item');
     if (itemParam) {
       setInitialItemId(itemParam);
-      // Clean up the URL
       window.history.replaceState(null, '', '/portfolio');
     }
 
