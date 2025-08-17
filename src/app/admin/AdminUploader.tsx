@@ -191,9 +191,10 @@ export default function AdminUploader() {
       setPastedUrl("");
       await loadPortfolioItems();
       alert("Item added by URL!");
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e);
-      alert(e?.message || "Failed to add URL. Check it and try again.");
+      const message = e instanceof Error ? e.message : "Failed to add URL. Check it and try again.";
+      alert(message);
     } finally {
       setIsAddingUrl(false);
     }
