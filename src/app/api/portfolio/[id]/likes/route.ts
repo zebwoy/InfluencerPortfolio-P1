@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { db, ensureSchema } from "@/lib/db";
 import { likes, portfolioItems } from "@/lib/schema";
 import { and, eq } from "drizzle-orm";
 
@@ -18,10 +18,11 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    await ensureSchema();
     const { id } = await params;
 
     const [item] = await db.select().from(portfolioItems).where(eq(portfolioItems.id, id)).limit(1);
-    if (!item) return NextResponse.json({ error: "Item not found" }, { status: 404 });
+    if (!item) return NextResponse.json({ likeCount: 0, isLiked: false });
 
     const allLikes = await db.select().from(likes).where(eq(likes.itemId, id));
     const likeCount = allLikes.length;
@@ -44,11 +45,15 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    await ensureSchema();
     const { id } = await params;
     const { action } = await request.json();
     if (!action || !["like", "unlike"].includes(action)) {
       return NextResponse.json({ error: "Invalid action" }, { status: 400 });
     }
+
+    const [item] = await db.select().from(portfolioItems).where(eq(portfolioItems.id, id)).limit(1);
+    if (!item) return NextResponse.json({ error: "Item not found" }, { status: 404 });
 
     const clientIP = getClientIP(request);
     const userAgent = request.headers.get("user-agent") || "unknown";
@@ -56,12 +61,7 @@ export async function POST(
     if (action === "like") {
       await db.insert(likes).values({ itemId: id, ipAddress: clientIP, userAgent });
     } else {
-      // unlike: remove one like from this IP if exists
-      const existing = await db.select().from(likes).where(and(eq(likes.itemId, id), eq(likes.ipAddress, clientIP))).limit(1);
-      if (existing[0]) {
-        // Drizzle delete requires a where; delete all matches for simplicity
-        await db.delete(likes).where(and(eq(likes.itemId, id), eq(likes.ipAddress, clientIP)));
-      }
+      await db.delete(likes).where(and(eq(likes.itemId, id), eq(likes.ipAddress, clientIP)));
     }
 
     return NextResponse.json({ success: true });

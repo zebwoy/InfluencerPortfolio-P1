@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { db, ensureSchema } from "@/lib/db";
 import { portfolioItems } from "@/lib/schema";
 import { uploadFileToCloudinary } from "@/lib/cloudinary";
 
 export async function POST(request: NextRequest) {
   try {
+    await ensureSchema();
+
     const formData = await request.formData();
     const file = formData.get("file") as File;
 
@@ -15,7 +17,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const fileType = file.type;
+    const fileType = file.type || "";
     const isImage = fileType.startsWith("image/");
     const isVideo = fileType.startsWith("video/");
 
@@ -26,7 +28,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const uploaded = await uploadFileToCloudinary(file, { folder: "portfolio" });
+    let uploaded;
+    try {
+      uploaded = await uploadFileToCloudinary(file, { folder: "portfolio" });
+    } catch (e) {
+      console.error("Cloudinary upload failed:", e);
+      return NextResponse.json({ error: "Upload to Cloudinary failed" }, { status: 502 });
+    }
 
     const id = `item-${Date.now()}`;
     const [inserted] = await db.insert(portfolioItems)
