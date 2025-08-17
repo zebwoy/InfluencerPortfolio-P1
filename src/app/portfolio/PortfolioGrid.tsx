@@ -94,10 +94,9 @@ export default function PortfolioGrid({ items, initialItemId }: Props) {
             
             {/* Action Buttons Section */}
             <div className="p-4 bg-gray-900/80 backdrop-blur-sm border-t border-gray-800/50">
-              <div className="flex items-center space-x-3">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
                 {/* Like Button */}
                 <LikeButton itemId={item.id} />
-                
                 {/* Share Button */}
                 <ShareButton itemId={item.id} item={item} />
               </div>
@@ -362,7 +361,7 @@ function LikeButton({ itemId }: { itemId: string }) {
         handleLike();
       }}
       disabled={isPending}
-      className={`flex-grow flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 lg:px-6 lg:py-3.5 min-h-[40px] sm:min-h-[44px] lg:min-h-[48px] rounded-xl transition-all duration-300 btn-premium ${
+      className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 lg:px-6 lg:py-3.5 min-h-[44px] sm:min-h-[48px] lg:min-h-[52px] rounded-xl transition-all duration-300 btn-premium ${
         isLiked
           ? "bg-gradient-to-r from-red-500 to-pink-500 text-white shadow-lg shadow-red-500/25"
           : "bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600"
@@ -375,8 +374,8 @@ function LikeButton({ itemId }: { itemId: string }) {
       )}
       <span className="text-sm sm:text-base lg:text-lg font-semibold">{isLiked ? "Liked" : "Like"}</span>
       {likeCount > 0 && (
-        <span className={`px-2 py-1 rounded-lg text-xs sm:text-sm font-semibold ${
-          isLiked ? "bg-white/20 text-white" : "bg-gray-600 text-gray-200"
+        <span className={`px-2 sm:px-2.5 py-1 rounded-lg text-xs sm:text-sm font-bold ${
+          isLiked ? "bg-white/25 text-white" : "bg-gray-600/90 text-gray-100"
         }`}>{likeCount}</span>
       )}
     </button>
@@ -468,12 +467,12 @@ function ShareButton({ itemId, item }: { itemId: string; item: PortfolioItem }) 
       }}
       disabled={isSharing}
       data-share={itemId}
-      className="flex-grow flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 lg:px-6 lg:py-3.5 min-h-[40px] sm:min-h-[44px] lg:min-h-[48px] rounded-xl bg-gray-700 text-gray-200 hover:bg-gray-600 border border-gray-600 transition-all duration-300 btn-premium hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+      className="w-full flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 lg:px-6 lg:py-3.5 min-h-[44px] sm:min-h-[48px] lg:min-h-[52px] rounded-xl bg-gray-700 text-gray-200 hover:bg-gray-600 border border-gray-600 transition-all duration-300 btn-premium hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
     >
       <FaShareAlt className="text-gray-200" size={22} />
       <span className="text-sm sm:text-base lg:text-lg font-semibold">{message}</span>
       {shareCount !== null && (
-        <span className="px-2 py-1 rounded-lg text-xs sm:text-sm font-semibold bg-gray-600 text-gray-200">{shareCount}</span>
+        <span className="px-2 sm:px-2.5 py-1 rounded-lg text-xs sm:text-sm font-bold bg-gray-600/90 text-gray-100">{shareCount}</span>
       )}
     </button>
   );
