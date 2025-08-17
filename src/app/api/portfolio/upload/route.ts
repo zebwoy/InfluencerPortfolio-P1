@@ -7,8 +7,27 @@ export async function POST(request: NextRequest) {
   try {
     await ensureSchema();
 
+    const contentType = request.headers.get("content-type") || "";
+
+    // Path 1: JSON body with direct Cloudinary URL (preferred for large files)
+    if (contentType.includes("application/json")) {
+      const { url, type } = await request.json();
+      if (!url) {
+        return NextResponse.json({ error: "Missing url" }, { status: 400 });
+      }
+      if (!type || !["image", "video"].includes(type)) {
+        return NextResponse.json({ error: "Missing or invalid type: expected 'image' | 'video'" }, { status: 400 });
+      }
+      const id = `item-${Date.now()}`;
+      const [inserted] = await db.insert(portfolioItems)
+        .values({ id, type, src: url })
+        .returning();
+      return NextResponse.json({ success: true, item: inserted });
+    }
+
+    // Path 2: multipart file upload (small files only)
     const formData = await request.formData();
-    const file = formData.get("file") as File;
+    const file = formData.get("file") as File | null;
 
     if (!file) {
       return NextResponse.json(

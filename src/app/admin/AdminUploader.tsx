@@ -174,19 +174,26 @@ export default function AdminUploader() {
     if (!pastedUrl) return;
     setIsAddingUrl(true);
     try {
-      const guessType: "image" | "video" = pastedType ?? (pastedUrl.match(/\.(mp4|webm|mov|m4v)(\?|$)/i) ? "video" : "image");
+      const cleanUrl = pastedUrl.trim().replace(/^@+/, "");
+      if (!/^https?:\/\//i.test(cleanUrl)) {
+        throw new Error("Please paste a valid https URL");
+      }
+      const guessType: "image" | "video" = pastedType ?? (cleanUrl.match(/\.(mp4|webm|mov|m4v)(\?|$)/i) ? "video" : "image");
       const res = await fetch("/api/portfolio/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: pastedUrl, type: guessType })
+        body: JSON.stringify({ url: cleanUrl, type: guessType })
       });
-      if (!res.ok) throw new Error("Failed to save URL");
+      if (!res.ok) {
+        const msg = await res.text();
+        throw new Error(msg || "Failed to save URL");
+      }
       setPastedUrl("");
       await loadPortfolioItems();
       alert("Item added by URL!");
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      alert("Failed to add URL. Check it and try again.");
+      alert(e?.message || "Failed to add URL. Check it and try again.");
     } finally {
       setIsAddingUrl(false);
     }
