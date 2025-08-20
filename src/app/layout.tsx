@@ -29,8 +29,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}>
+        {/* removed card wavering filter */}
         <Nav />
-        <main className="mx-auto max-w-5xl px-6 sm:px-8 pt-16 pb-28">
+        <main className="mx-auto max-w-5xl px-6 sm:px-8 pt-[calc(var(--nav-height,56px)+1rem)] pb-28">
           {children}
         </main>
         <Footer />

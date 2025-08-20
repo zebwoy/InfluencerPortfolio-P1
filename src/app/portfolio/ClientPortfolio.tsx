@@ -15,7 +15,7 @@ export default function ClientPortfolio() {
   const [items, setItems] = useState<PortfolioItem[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [initialItemId, setInitialItemId] = useState<string | null>(null);
-  const [uiPreset, setUiPreset] = useState<"compact" | "detailed">("detailed");
+  
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -129,25 +129,9 @@ export default function ClientPortfolio() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, delay: 0.4 }}
     >
-      {/* Controls */}
-      <div className="mb-6 flex items-center justify-end gap-2 px-1">
-        <div className="inline-flex rounded-xl border border-gray-200 overflow-hidden bg-white/70 backdrop-blur-sm">
-          <button
-            className={`px-3 py-1.5 text-sm font-medium transition-colors ${uiPreset === "compact" ? "bg-gray-900 text-white" : "text-gray-700 hover:bg-gray-100"}`}
-            onClick={() => setUiPreset("compact")}
-          >
-            Compact
-          </button>
-          <button
-            className={`px-3 py-1.5 text-sm font-medium transition-colors ${uiPreset === "detailed" ? "bg-gray-900 text-white" : "text-gray-700 hover:bg-gray-100"}`}
-            onClick={() => setUiPreset("detailed")}
-          >
-            Detailed
-          </button>
-        </div>
-      </div>
+      
 
-      <PortfolioGrid items={items} initialItemId={initialItemId} uiPreset={uiPreset} />
+      <PortfolioGrid items={items} initialItemId={initialItemId} />
       
       {/* Portfolio Stats */}
       <motion.div 

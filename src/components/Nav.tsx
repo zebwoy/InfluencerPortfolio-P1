@@ -9,6 +9,8 @@ const links = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About" },
   { href: "/portfolio", label: "Portfolio" },
+  { href: "/achievements", label: "Achievements" },
+  { href: "/3d-achievements", label: "3D" },
   { href: "/contact", label: "Contact" },
 ];
 
@@ -18,7 +20,7 @@ export default function Nav() {
 
   const hidden = useHideOnScroll({ threshold: 6, minTop: 48 });
   return (
-    <header className={`fixed top-0 left-0 right-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-background/70 border-b border-black/5 transition-transform duration-200 ${hidden ? "-translate-y-full" : "translate-y-0"}`}>
+    <header style={{ ['--nav-height' as unknown as string]: '56px' }} className={`fixed top-0 left-0 right-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-background/70 border-b border-black/5 transition-transform duration-200 ${hidden ? "-translate-y-full" : "translate-y-0"}`}>
       <div className="relative mx-auto max-w-5xl px-6 sm:px-8 h-14 flex items-center justify-between">
         <Link href="/" className="font-medium tracking-tight">Zeya</Link>
 

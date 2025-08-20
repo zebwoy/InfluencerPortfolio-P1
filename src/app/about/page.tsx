@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 
 export default function AboutPage() {
   return (
-    <section className="max-w-2xl space-y-4 leading-relaxed">
+    <section className="max-w-2xl space-y-4 leading-relaxed lg:py-10">
       <motion.h1 initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
         About
       </motion.h1>

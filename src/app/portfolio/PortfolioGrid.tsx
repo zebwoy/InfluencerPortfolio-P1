@@ -2,17 +2,18 @@
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { useState, useEffect, useCallback, useRef } from "react";
-import { FaHeart, FaRegHeart, FaShareAlt } from "react-icons/fa";
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import SendIcon from '@mui/icons-material/Send';
 import { IoClose } from "react-icons/io5";
 import { PortfolioItem } from "./ClientPortfolio";
 
 interface Props {
   items: PortfolioItem[];
   initialItemId?: string | null;
-  uiPreset?: "compact" | "detailed";
 }
 
-export default function PortfolioGrid({ items, initialItemId, uiPreset = "detailed" }: Props) {
+export default function PortfolioGrid({ items, initialItemId }: Props) {
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -51,7 +52,7 @@ export default function PortfolioGrid({ items, initialItemId, uiPreset = "detail
 
   return (
     <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
+      <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8`}>
         {items.map((item, index) => (
           <motion.article
             key={item.id}
@@ -96,9 +97,9 @@ export default function PortfolioGrid({ items, initialItemId, uiPreset = "detail
             <div className="p-4 bg-gray-900/80 backdrop-blur-sm border-t border-gray-800/50">
               <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:gap-4">
                 {/* Like Button */}
-                <LikeButton itemId={item.id} uiPreset={uiPreset} />
+                <LikeButton itemId={item.id} />
                 {/* Share Button */}
-                <ShareButton itemId={item.id} item={item} uiPreset={uiPreset} />
+                <ShareButton itemId={item.id} item={item} />
               </div>
             </div>
           </motion.article>
@@ -176,8 +177,8 @@ export default function PortfolioGrid({ items, initialItemId, uiPreset = "detail
                   
                   {/* Action Buttons in Modal */}
                   <div className="flex items-center space-x-2 sm:space-x-3">
-                    <LikeButton itemId={selectedItem.id} uiPreset={uiPreset} />
-                    <ShareButton itemId={selectedItem.id} item={selectedItem} uiPreset={uiPreset} />
+                    <LikeButton itemId={selectedItem.id} />
+                    <ShareButton itemId={selectedItem.id} item={selectedItem} />
                   </div>
                 </div>
               </div>
@@ -303,7 +304,7 @@ function VideoCard({ src, poster }: { src: string; poster?: string }) {
   );
 }
 
-function LikeButton({ itemId, uiPreset }: { itemId: string; uiPreset: "compact" | "detailed" }) {
+function LikeButton({ itemId }: { itemId: string }) {
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
   const [isPending, setIsPending] = useState(false);
@@ -359,24 +360,23 @@ function LikeButton({ itemId, uiPreset }: { itemId: string; uiPreset: "compact" 
   return (
     <button
       onClick={(e) => {
-        e.stopPropagation(); // Prevent triggering the parent article click
+        e.stopPropagation();
         handleLike();
       }}
       disabled={isPending}
-      className={`w-full flex items-center justify-center gap-2 sm:gap-2.5 lg:gap-3 px-3.5 py-2.5 sm:px-4 sm:py-3 lg:px-5 lg:py-3.5 min-h-[44px] sm:min-h-[48px] lg:min-h-[52px] rounded-xl transition-all duration-300 btn-premium ${
+      className={`relative w-full flex items-center justify-center p-3 sm:p-3.5 lg:p-4 min-h-[44px] sm:min-h-[48px] lg:min-h-[52px] rounded-xl transition-all duration-300 btn-premium ${
         isLiked
           ? "bg-gradient-to-r from-red-500 to-pink-500 text-white shadow-lg shadow-red-500/25"
           : "bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600"
       } ${isPending ? "opacity-50 cursor-not-allowed" : "hover:scale-105"}`}
     >
       {isLiked ? (
-        <FaHeart className="text-white" size={20} />
+        <FavoriteIcon className="text-white" fontSize="medium" />
       ) : (
-        <FaRegHeart className="text-gray-200" size={20} />
+        <FavoriteBorderIcon className="text-gray-200" fontSize="medium" />
       )}
-      <span className={`truncate font-semibold ${uiPreset === "compact" ? "hidden sm:inline text-[15px] sm:text-base lg:text-lg" : "text-sm sm:text-[15px] lg:text-lg"}`}>{isLiked ? "Liked" : "Like"}</span>
       {likeCount > 0 && (
-        <span className={`px-1.5 sm:px-2 py-0.5 rounded-md font-bold ${uiPreset === "compact" ? "hidden sm:inline text-[11px] sm:text-xs" : "text-[11px] sm:text-xs"} ${
+        <span className={`absolute top-1 right-1 min-w-[18px] h-[18px] px-1 rounded-full text-[11px] font-bold flex items-center justify-center ${
           isLiked ? "bg-white/25 text-white" : "bg-gray-600/90 text-gray-100"
         }`}>{likeCount}</span>
       )}
@@ -384,9 +384,8 @@ function LikeButton({ itemId, uiPreset }: { itemId: string; uiPreset: "compact" 
   );
 }
 
-function ShareButton({ itemId, item, uiPreset }: { itemId: string; item: PortfolioItem; uiPreset: "compact" | "detailed" }) {
+function ShareButton({ itemId, item }: { itemId: string; item: PortfolioItem }) {
   const [isSharing, setIsSharing] = useState(false);
-  const [message, setMessage] = useState("Share");
   const [shareCount, setShareCount] = useState<number | null>(null);
 
   useEffect(() => {
@@ -423,16 +422,12 @@ function ShareButton({ itemId, item, uiPreset }: { itemId: string; item: Portfol
           text: shareText,
           url: shareUrl,
         });
-        setMessage("Shared!");
-        setTimeout(() => setMessage("Share"), 2000);
         // Log share
         fetch(`/api/portfolio/${itemId}/shares`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ method: 'native' }) }).catch(() => {});
         setShareCount((c) => (c ?? 0) + 1);
       } else {
         // Fallback: copy to clipboard
         await navigator.clipboard.writeText(shareUrl);
-        setMessage("Copied!");
-        setTimeout(() => setMessage("Share"), 2000);
         
         // Show a toast notification
         showToast("Link copied to clipboard! Share this link to show the specific item.");
@@ -442,8 +437,6 @@ function ShareButton({ itemId, item, uiPreset }: { itemId: string; item: Portfol
       }
     } catch (error) {
       console.error("Share failed:", error);
-      setMessage("Error!");
-      setTimeout(() => setMessage("Share"), 2000);
     } finally {
       setIsSharing(false);
     }
@@ -464,17 +457,16 @@ function ShareButton({ itemId, item, uiPreset }: { itemId: string; item: Portfol
   return (
     <button
       onClick={(e) => {
-        e.stopPropagation(); // Prevent triggering the parent article click
+        e.stopPropagation();
         handleShare();
       }}
       disabled={isSharing}
       data-share={itemId}
-      className="w-full flex items-center justify-center gap-2 sm:gap-2.5 lg:gap-3 px-3.5 py-2.5 sm:px-4 sm:py-3 lg:px-5 lg:py-3.5 min-h-[44px] sm:min-h-[48px] lg:min-h-[52px] rounded-xl bg-gray-700 text-gray-200 hover:bg-gray-600 border border-gray-600 transition-all duration-300 btn-premium hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+      className="relative w-full flex items-center justify-center p-3 sm:p-3.5 lg:p-4 min-h-[44px] sm:min-h-[48px] lg:min-h-[52px] rounded-xl bg-gray-700 text-gray-200 hover:bg-gray-600 border border-gray-600 transition-all duration-300 btn-premium hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
     >
-      <FaShareAlt className="text-gray-200" size={18} />
-      <span className={`truncate font-semibold ${uiPreset === "compact" ? "hidden sm:inline text-[15px] sm:text-base lg:text-lg" : "text-sm sm:text-[15px] lg:text-lg"}`}>{message}</span>
+      <SendIcon className="text-gray-200" fontSize="small" />
       {shareCount !== null && (
-        <span className={`px-1.5 sm:px-2 py-0.5 rounded-md font-bold bg-gray-600/90 text-gray-100 ${uiPreset === "compact" ? "hidden sm:inline text-[11px] sm:text-xs" : "text-[11px] sm:text-xs"}`}>{shareCount}</span>
+        <span className="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 rounded-full text-[11px] font-bold flex items-center justify-center bg-gray-600/90 text-gray-100">{shareCount}</span>
       )}
     </button>
   );
