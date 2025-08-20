@@ -2,7 +2,7 @@
 
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Environment, Html, Instances, Instance } from "@react-three/drei";
-import { Suspense, useMemo, useRef, useState, useEffect, useCallback } from "react";
+import { Suspense, useMemo, useRef, useState, useEffect } from "react";
 import * as THREE from "three";
 import gsap from "gsap";
 import { motion, AnimatePresence } from "framer-motion";
@@ -44,7 +44,7 @@ function Road({ curve }: { curve: THREE.CatmullRomCurve3 }) {
 }
 
 function MilestoneNode({ curve, t, data, onFocus }: { curve: THREE.CatmullRomCurve3; t: number; data: Milestone; onFocus: (id: string) => void }) {
-  const ref = useRef<THREE.Object3D>(null);
+  const ref = useRef<THREE.Group>(null);
   const pos = curve.getPoint(t);
   const normal = curve.getTangent(t).normalize();
   // Offset slightly from the road to be visible
@@ -57,9 +57,8 @@ function MilestoneNode({ curve, t, data, onFocus }: { curve: THREE.CatmullRomCur
   }, []);
 
   return (
-    <group position={[p.x, p.y, p.z]}>
+    <group ref={ref} position={[p.x, p.y, p.z]}>
       <Instance
-        ref={ref as any}
         scale={1}
         onClick={() => onFocus(data.id)}
         onPointerOver={(e) => {
@@ -75,7 +74,7 @@ function MilestoneNode({ curve, t, data, onFocus }: { curve: THREE.CatmullRomCur
   );
 }
 
-function Rig({ curve, activeId, tRef, playing }: { curve: THREE.CatmullRomCurve3; activeId?: string | null; tRef: React.MutableRefObject<number>; playing: boolean }) {
+function Rig({ curve, tRef, playing }: { curve: THREE.CatmullRomCurve3; tRef: React.MutableRefObject<number>; playing: boolean }) {
   const group = useRef<THREE.Group>(null);
   useFrame((state, delta) => {
     if (!group.current) return;
@@ -156,7 +155,7 @@ export default function ThreeDAchievementsPage() {
                   ))}
                 </Instances>
               </group>
-              <Rig curve={curve} activeId={active} tRef={tRef} playing={playing} />
+              <Rig curve={curve} tRef={tRef} playing={playing} />
             </Suspense>
             <directionalLight position={[5, 10, 5]} intensity={1.2} />
             <ambientLight intensity={0.15} />
