@@ -6,12 +6,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useHideOnScroll } from "@/hooks/useHideOnScroll";
 
 const links = [
-  { href: "/", label: "Home" },
-  { href: "/about", label: "About" },
-  { href: "/portfolio", label: "Portfolio" },
+  // { href: "/", label: "Home" },
+  { href: "/about", label: "How I work" },
+  { href: "/portfolio", label: "What I do" },
   // { href: "/achievements", label: "Achievements" },
   // { href: "/3d-achievements", label: "3D" },
-  { href: "/contact", label: "Contact" },
+  { href: "/contact", label: "Where to reach me" },
 ];
 
 export default function Nav() {
@@ -32,7 +32,7 @@ export default function Nav() {
               <li key={l.href}>
                 <Link
                   href={l.href}
-                  className={`hover:text-foreground transition-colors border-b-2 border-transparent pb-0.5 ${active ? "text-foreground border-foreground" : "text-foreground/70 hover:border-foreground/80"}`}
+                  className={`hover:text-foreground transition-colors border-b-2 border-transparent pb-0.5 ${active ? "text-white border-white" : "text-gray-400 hover:border-gray-300"}`}
                 >
                   {l.label}
                 </Link>

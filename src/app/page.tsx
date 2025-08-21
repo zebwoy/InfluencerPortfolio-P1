@@ -28,7 +28,7 @@ export default function Home() {
           transition={{ delay: 0.1, duration: 0.6 }}
           className="text-xl sm:text-3xl tracking-tight px-2"
         >
-          Skin &amp; Hair Care Enthusiast sharing real tips
+          Hi, I'm Zeya — a UGC Creator for beauty & lifestyle brands.
         </motion.h1>
 
         <motion.p
@@ -37,7 +37,7 @@ export default function Home() {
           transition={{ delay: 0.2, duration: 0.6 }}
           className="text-pretty text-sm sm:text-base text-foreground/70 px-4"
         >
-          Micro-level UGC creator. Minimal, honest &amp; helpful content.
+          I create authentic product demos, unboxings, and aesthetic reels that help brands build trust and drive conversions.
         </motion.p>
 
         <motion.div

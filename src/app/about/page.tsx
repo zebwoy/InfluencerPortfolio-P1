@@ -1,23 +1,67 @@
-"use client";
-import { motion } from "framer-motion";
+"use client"
 
-export default function AboutPage() {
+import { motion } from "framer-motion"
+import { CheckCircle, FileText, Lightbulb, Camera, Zap } from "lucide-react"
+
+const steps = [
+  { id: 1, title: "Brief", desc: "Share your brand’s needs in 2 minutes.", icon: FileText },
+  { id: 2, title: "Concept", desc: "Receive creative ideas tailored to your product.", icon: Lightbulb },
+  { id: 3, title: "Create", desc: "Filming + editing with quick turnarounds.", icon: Camera },
+  { id: 4, title: "Deliver", desc: "Final UGC ready in 48–72 hours.", icon: Zap },
+]
+
+export default function WorkflowSection() {
   return (
-    <section className="max-w-2xl space-y-4 leading-relaxed lg:py-10">
-      <motion.h1 initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-        About
-      </motion.h1>
-      <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1, duration: 0.5 }}>
-        I&apos;m Zeya, a skin and Hair Care enthusiast who creates honest, everyday
-        User‑Generated Content. My focus is practicality: how routines feel, how
-        real skin responds, and sharing what actually helps.
-      </motion.p>
-      <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2, duration: 0.5 }}>
-        I don&apos;t sell products or do paid placements. I keep my work minimal and
-        transparent so the content can speak for itself. If you enjoy simple,
-        useful tips and calm visuals, you&apos;re in the right place.
-      </motion.p>
-    </section>
-  );
-}
+    <section className="w-full py-16 bg-black text-white">
+      <div className="max-w-6xl mx-auto px-6 text-center">
+        {/* Headline */}
+        <h2 className="text-3xl md:text-4xl font-bold mb-4">
+          From <span className="text-yellow-400">Brief</span> to Delivery in 72 Hours ⚡
+        </h2>
+        <p className="text-lg text-gray-400 mb-12">
+          A seamless workflow designed for brands that value speed + creativity.
+        </p>
 
+        {/* Steps */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          {steps.map((step, index) => {
+            const Icon = step.icon
+            return (
+              <motion.div
+                key={step.id}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.2 }}
+                viewport={{ once: true }}
+                className="flex flex-col items-center text-center"
+              >
+                <div className="bg-yellow-400 text-black rounded-full p-4 mb-4 shadow-lg">
+                  <Icon className="w-8 h-8" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
+                <p className="text-gray-400 text-sm">{step.desc}</p>
+              </motion.div>
+            )
+          })}
+        </div>
+
+        {/* Decorative line */}
+        <div className="hidden md:block relative mt-12">
+          <div className="absolute top-1/2 left-0 right-0 h-[2px] bg-gray-700"></div>
+          <div className="flex justify-between max-w-5xl mx-auto">
+            {steps.map((_, i) => (
+              <motion.span
+                key={i}
+                initial={{ scale: 0 }}
+                whileInView={{ scale: 1 }}
+                transition={{ duration: 0.4, delay: i * 0.3 }}
+                viewport={{ once: true }}
+                className="w-4 h-4 rounded-full bg-yellow-400 relative z-10"
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
