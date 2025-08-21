@@ -28,7 +28,7 @@ export default function Home() {
           transition={{ delay: 0.1, duration: 0.6 }}
           className="text-xl sm:text-3xl tracking-tight px-2"
         >
-          Hi, I'm Zeya — a UGC Creator for beauty & lifestyle brands.
+          Hi, I&apos;m Zeya — a UGC Creator for beauty &amp; lifestyle brands.
         </motion.h1>
 
         <motion.p
