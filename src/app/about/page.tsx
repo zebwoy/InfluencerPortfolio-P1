@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { CheckCircle, FileText, Lightbulb, Camera, Zap } from "lucide-react"
+import { FileText, Lightbulb, Camera, Zap } from "lucide-react"
 
 const steps = [
   { id: 1, title: "Brief", desc: "Share your brand’s needs in 2 minutes.", icon: FileText },
