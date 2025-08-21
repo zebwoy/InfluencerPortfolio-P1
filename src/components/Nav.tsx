@@ -9,8 +9,8 @@ const links = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About" },
   { href: "/portfolio", label: "Portfolio" },
-  { href: "/achievements", label: "Achievements" },
-  { href: "/3d-achievements", label: "3D" },
+  // { href: "/achievements", label: "Achievements" },
+  // { href: "/3d-achievements", label: "3D" },
   { href: "/contact", label: "Contact" },
 ];
 
@@ -32,7 +32,7 @@ export default function Nav() {
               <li key={l.href}>
                 <Link
                   href={l.href}
-                  className={`hover:text-foreground transition-colors ${active ? "text-foreground" : "text-foreground/70"}`}
+                  className={`hover:text-foreground transition-colors border-b-2 border-transparent pb-0.5 ${active ? "text-foreground border-foreground" : "text-foreground/70 hover:border-foreground/80"}`}
                 >
                   {l.label}
                 </Link>
