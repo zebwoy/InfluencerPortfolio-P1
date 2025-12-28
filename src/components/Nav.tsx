@@ -8,7 +8,7 @@ import { useHideOnScroll } from "@/hooks/useHideOnScroll";
 const links = [
   // { href: "/", label: "Home" },
   { href: "/about", label: "How I work" },
-  { href: "/portfolio", label: "What I do" },
+  // { href: "/portfolio", label: "What I do" },
   // { href: "/achievements", label: "Achievements" },
   // { href: "/3d-achievements", label: "3D" },
   { href: "/contact", label: "Where to reach me" },
