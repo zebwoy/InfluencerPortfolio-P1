@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Zeya • UGC in Skin & Hair Care",
+  title: "Zeiya • UGC in Skin & Hair Care",
   description:
     "Micro-level UGC creator sharing authentic skin and Hair Care tips. Minimal, airy portfolio with contact links.",
   icons: { icon: "/favicon.ico" },

@@ -5,6 +5,8 @@ export const portfolioItems = pgTable("portfolio_items", {
   type: text("type").notNull(), // 'image' | 'video'
   src: text("src").notNull(),
   thumb: text("thumb"),
+  logo: text("logo"), // URL to logo image for video items
+  brandName: text("brand_name"), // Brand name for video items
   createdAt: timestamp("created_at", { withTimezone: false }).notNull().defaultNow(),
 });
 

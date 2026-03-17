@@ -8,6 +8,8 @@ export interface PortfolioItem {
   type: "image" | "video";
   src: string;
   thumb?: string;
+  logo?: string; // URL to logo image for video items
+  brandName?: string; // Brand name for video items
   createdAt: string;
 }
 
@@ -18,11 +20,13 @@ export default function ClientPortfolio() {
   
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const itemParam = urlParams.get('item');
-    if (itemParam) {
-      setInitialItemId(itemParam);
-      window.history.replaceState(null, '', '/portfolio');
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const itemParam = urlParams.get('item');
+      if (itemParam) {
+        setInitialItemId(itemParam);
+        window.history.replaceState(null, '', '/portfolio');
+      }
     }
 
     async function loadPortfolio() {

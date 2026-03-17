@@ -8,6 +8,8 @@ interface PortfolioItem {
   type: "image" | "video";
   src: string;
   thumb?: string;
+  logo?: string; // URL to logo image for video items
+  brandName?: string; // Brand name for video items
   createdAt: string;
   likeCount?: number;
 }
@@ -35,10 +37,14 @@ export default function AdminUploader() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [selectedLogos, setSelectedLogos] = useState<(File | null)[]>([]);
+  const [brandNames, setBrandNames] = useState<string[]>([]);
   const [dragActive, setDragActive] = useState(false);
   const [activeTab, setActiveTab] = useState<"upload" | "analytics">("upload");
   const [pastedUrl, setPastedUrl] = useState("");
   const [pastedType, setPastedType] = useState<"image" | "video">("video");
+  const [pastedLogo, setPastedLogo] = useState("");
+  const [pastedBrandName, setPastedBrandName] = useState("");
   const [isAddingUrl, setIsAddingUrl] = useState(false);
 
   useEffect(() => {
@@ -107,6 +113,10 @@ export default function AdminUploader() {
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const files = Array.from(e.dataTransfer.files);
       setSelectedFiles(prev => [...prev, ...files]);
+      // Initialize brand names for new files
+      setBrandNames(prev => [...prev, ...files.map(() => "")]);
+      // Initialize empty logo array for new files
+      setSelectedLogos(prev => [...prev, ...files.map(() => null as File | null)]);
     }
   };
 
@@ -114,11 +124,31 @@ export default function AdminUploader() {
     if (e.target.files) {
       const files = Array.from(e.target.files);
       setSelectedFiles(prev => [...prev, ...files]);
+      // Initialize brand names for new files
+      setBrandNames(prev => [...prev, ...files.map(() => "")]);
+      // Initialize empty logo array for new files
+      setSelectedLogos(prev => [...prev, ...files.map(() => null as File | null)]);
     }
+  };
+
+  const handleLogoSelect = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const newLogos = [...selectedLogos];
+      newLogos[index] = e.target.files[0];
+      setSelectedLogos(newLogos);
+    }
+  };
+
+  const handleBrandNameChange = (index: number, value: string) => {
+    const newBrandNames = [...brandNames];
+    newBrandNames[index] = value;
+    setBrandNames(newBrandNames);
   };
 
   const removeFile = (index: number) => {
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+    setSelectedLogos(prev => prev.filter((_, i) => i !== index));
+    setBrandNames(prev => prev.filter((_, i) => i !== index));
   };
 
   const uploadFiles = async () => {
@@ -130,8 +160,18 @@ export default function AdminUploader() {
     try {
       for (let i = 0; i < selectedFiles.length; i++) {
         const file = selectedFiles[i];
+        const logo = selectedLogos[i];
+        const brandName = brandNames[i];
+        
         const formData = new FormData();
         formData.append("file", file);
+        
+        if (logo) {
+          formData.append("logo", logo);
+        }
+        if (brandName) {
+          formData.append("brandName", brandName);
+        }
 
         const response = await fetch("/api/portfolio/upload", {
           method: "POST",
@@ -148,6 +188,8 @@ export default function AdminUploader() {
       // Reload portfolio items
       await loadPortfolioItems();
       setSelectedFiles([]);
+      setSelectedLogos([]);
+      setBrandNames([]);
       alert("Files uploaded successfully!");
     } catch (error) {
       console.error("Upload failed:", error);
@@ -205,13 +247,20 @@ export default function AdminUploader() {
       const res = await fetch("/api/portfolio/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: cleanUrl, type: guessType })
+        body: JSON.stringify({ 
+          url: cleanUrl, 
+          type: guessType,
+          logo: pastedLogo || null,
+          brandName: pastedBrandName || null
+        })
       });
       if (!res.ok) {
         const msg = await res.text();
         throw new Error(msg || "Failed to save URL");
       }
       setPastedUrl("");
+      setPastedLogo("");
+      setPastedBrandName("");
       await loadPortfolioItems();
       alert("Item added by URL!");
     } catch (e: unknown) {
@@ -310,29 +359,49 @@ export default function AdminUploader() {
                 {/* Paste Cloudinary URL */}
                 <div className="mt-6 space-y-3">
                   <h3 className="text-md font-medium text-gray-200">Or add by Cloudinary URL</h3>
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <input
-                      type="url"
-                      placeholder="https://res.cloudinary.com/.../upload/.../file.mp4"
-                      value={pastedUrl}
-                      onChange={(e) => setPastedUrl(e.target.value)}
-                      className="flex-1 h-10 rounded-md border border-white/20 bg-transparent px-3 text-gray-100 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-white/30"
-                    />
-                    <select
-                      value={pastedType}
-                      onChange={(e) => setPastedType(e.target.value as "image" | "video")}
-                      className="h-10 rounded-md border border-white/20 bg-transparent px-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-white/30"
-                    >
-                      <option value="video">video</option>
-                      <option value="image">image</option>
-                    </select>
-                    <button
-                      onClick={addByUrl}
-                      disabled={isAddingUrl || !pastedUrl}
-                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isAddingUrl ? "Adding..." : "Add by URL"}
-                    </button>
+                  <div className="space-y-3">
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <input
+                        type="url"
+                        placeholder="https://res.cloudinary.com/.../upload/.../file.mp4"
+                        value={pastedUrl}
+                        onChange={(e) => setPastedUrl(e.target.value)}
+                        className="flex-1 h-10 rounded-md border border-white/20 bg-transparent px-3 text-gray-100 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-white/30"
+                      />
+                      <select
+                        value={pastedType}
+                        onChange={(e) => setPastedType(e.target.value as "image" | "video")}
+                        className="h-10 rounded-md border border-white/20 bg-transparent px-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-white/30"
+                      >
+                        <option value="video">video</option>
+                        <option value="image">image</option>
+                      </select>
+                      <button
+                        onClick={addByUrl}
+                        disabled={isAddingUrl || !pastedUrl}
+                        className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isAddingUrl ? "Adding..." : "Add by URL"}
+                      </button>
+                    </div>
+                    
+                    {/* Logo and Brand Name fields for URL upload */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <input
+                        type="url"
+                        placeholder="Logo URL (optional)"
+                        value={pastedLogo}
+                        onChange={(e) => setPastedLogo(e.target.value)}
+                        className="h-10 rounded-md border border-white/20 bg-transparent px-3 text-gray-100 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-white/30"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Brand Name (optional)"
+                        value={pastedBrandName}
+                        onChange={(e) => setPastedBrandName(e.target.value)}
+                        className="h-10 rounded-md border border-white/20 bg-transparent px-3 text-gray-100 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-white/30"
+                      />
+                    </div>
                   </div>
                   <p className="text-xs text-gray-400">Use the secure Cloudinary URL (https://res.cloudinary.com/...). Large files should be uploaded to Cloudinary first, then pasted here.</p>
                 </div>
@@ -341,21 +410,46 @@ export default function AdminUploader() {
                 {selectedFiles.length > 0 && (
                   <div className="mt-6">
                     <h3 className="text-md font-medium text-gray-200 mb-3">Selected Files:</h3>
-                    <div className="space-y-2">
+                    <div className="space-y-4">
                       {selectedFiles.map((file, index) => (
-                        <div key={index} className="flex items-center justify-between bg-gray-700/50 p-3 rounded border border-gray-600">
-                          <div className="flex items-center space-x-3">
-                            <span className="text-sm text-gray-300">{file.name}</span>
-                            <span className="text-xs text-gray-400">
-                              ({(file.size / 1024 / 1024).toFixed(2)} MB)
-                            </span>
+                        <div key={index} className="bg-gray-700/50 p-4 rounded border border-gray-600">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center space-x-3">
+                              <span className="text-sm text-gray-300">{file.name}</span>
+                              <span className="text-xs text-gray-400">
+                                ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                              </span>
+                            </div>
+                            <button
+                              onClick={() => removeFile(index)}
+                              className="text-red-400 hover:text-red-300 text-sm transition-colors duration-200"
+                            >
+                              Remove
+                            </button>
                           </div>
-                          <button
-                            onClick={() => removeFile(index)}
-                            className="text-red-400 hover:text-red-300 text-sm transition-colors duration-200"
-                          >
-                            Remove
-                          </button>
+                          
+                          {/* Logo and Brand Name fields for each file */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-xs text-gray-400 mb-1">Logo (PNG/JPG)</label>
+                              <input
+                                type="file"
+                                accept="image/png,image/jpeg,image/jpg"
+                                onChange={(e) => handleLogoSelect(index, e)}
+                                className="w-full h-8 text-xs text-gray-300 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-gray-600 file:text-gray-300 hover:file:bg-gray-500"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs text-gray-400 mb-1">Brand Name</label>
+                              <input
+                                type="text"
+                                placeholder="Enter brand name"
+                                value={brandNames[index] || ""}
+                                onChange={(e) => handleBrandNameChange(index, e.target.value)}
+                                className="w-full h-8 rounded border border-white/20 bg-transparent px-2 text-xs text-gray-100 placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-white/30"
+                              />
+                            </div>
+                          </div>
                         </div>
                       ))}
                     </div>

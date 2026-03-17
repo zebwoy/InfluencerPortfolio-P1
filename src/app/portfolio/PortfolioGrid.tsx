@@ -27,14 +27,16 @@ export default function PortfolioGrid({ items, initialItemId }: Props) {
       }
     } else {
       // Check for hash in URL as fallback
-      const hash = window.location.hash.replace('#', '');
-      if (hash) {
-        const item = items.find(item => item.id === hash);
-        if (item) {
-          setSelectedItem(item);
-          setIsModalOpen(true);
-          // Remove hash from URL but keep the item open
-          window.history.replaceState(null, '', '/portfolio');
+      if (typeof window !== 'undefined') {
+        const hash = window.location.hash.replace('#', '');
+        if (hash) {
+          const item = items.find(item => item.id === hash);
+          if (item) {
+            setSelectedItem(item);
+            setIsModalOpen(true);
+            // Remove hash from URL but keep the item open
+            window.history.replaceState(null, '', '/portfolio');
+          }
         }
       }
     }
@@ -75,7 +77,7 @@ export default function PortfolioGrid({ items, initialItemId }: Props) {
                   priority={index < 4}
                 />
               ) : (
-                <VideoCard src={item.src} poster={item.thumb} />
+                <VideoCard src={item.src} poster={item.thumb} logo={item.logo} brandName={item.brandName} />
               )}
               
               {/* Overlay gradient on hover (non-interactive) */}
@@ -192,7 +194,7 @@ export default function PortfolioGrid({ items, initialItemId }: Props) {
 
 // (Removed MoreActions per request)
 
-function VideoCard({ src, poster }: { src: string; poster?: string }) {
+function VideoCard({ src, poster, logo, brandName }: { src: string; poster?: string; logo?: string; brandName?: string }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isReady, setIsReady] = useState(false);
   const [isBuffering, setIsBuffering] = useState(false);
@@ -280,6 +282,31 @@ function VideoCard({ src, poster }: { src: string; poster?: string }) {
         onContextMenu={(e) => e.preventDefault()}
         style={{ userSelect: 'none', WebkitUserSelect: 'none', MozUserSelect: 'none' }}
       />
+      
+      {/* Logo and Brand Name overlay when not playing */}
+      {!isHovering && !isBuffering && (logo || brandName) && (
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm">
+          {logo && (
+            <div className="mb-3">
+              <Image
+                src={logo}
+                alt={brandName || "Brand logo"}
+                width={80}
+                height={80}
+                className="object-contain max-w-[80px] max-h-[80px] drop-shadow-lg"
+              />
+            </div>
+          )}
+          {brandName && (
+            <div className="text-center px-4">
+              <h3 className="text-white font-semibold text-lg drop-shadow-lg">
+                {brandName}
+              </h3>
+            </div>
+          )}
+        </div>
+      )}
+      
       {!isReady && !isBuffering && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/50 text-white/90">
           <div className="w-8 h-8 border-4 border-gray-300 border-t-white rounded-full animate-spin"></div>

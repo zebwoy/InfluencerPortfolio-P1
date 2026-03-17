@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
 
     // Path 1: JSON body with direct Cloudinary URL (preferred for large files)
     if (contentType.includes("application/json")) {
-      const { url, type } = await request.json();
+      const { url, type, logo, brandName } = await request.json();
       if (!url) {
         return NextResponse.json({ error: "Missing url" }, { status: 400 });
       }
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
       }
       const id = `item-${Date.now()}`;
       const [inserted] = await db.insert(portfolioItems)
-        .values({ id, type, src: url })
+        .values({ id, type, src: url, logo, brandName })
         .returning();
       return NextResponse.json({ success: true, item: inserted });
     }
@@ -28,6 +28,8 @@ export async function POST(request: NextRequest) {
     // Path 2: multipart file upload (small files only)
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
+    const logoFile = formData.get("logo") as File | null;
+    const brandName = formData.get("brandName") as string | null;
 
     if (!file) {
       return NextResponse.json(
@@ -48,8 +50,16 @@ export async function POST(request: NextRequest) {
     }
 
     let uploaded;
+    let logoUrl = null;
+    
     try {
       uploaded = await uploadFileToCloudinary(file, { folder: "portfolio" });
+      
+      // Upload logo if provided
+      if (logoFile) {
+        const logoUploaded = await uploadFileToCloudinary(logoFile, { folder: "portfolio/logos" });
+        logoUrl = logoUploaded.secure_url;
+      }
     } catch (e) {
       console.error("Cloudinary upload failed:", e);
       return NextResponse.json({ error: "Upload to Cloudinary failed" }, { status: 502 });
@@ -57,7 +67,13 @@ export async function POST(request: NextRequest) {
 
     const id = `item-${Date.now()}`;
     const [inserted] = await db.insert(portfolioItems)
-      .values({ id, type: isImage ? "image" : "video", src: uploaded.secure_url })
+      .values({ 
+        id, 
+        type: isImage ? "image" : "video", 
+        src: uploaded.secure_url,
+        logo: logoUrl,
+        brandName: brandName || null
+      })
       .returning();
 
     return NextResponse.json({ success: true, item: inserted });

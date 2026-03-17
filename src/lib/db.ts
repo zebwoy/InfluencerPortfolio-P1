@@ -19,6 +19,8 @@ export async function ensureSchema(): Promise<void> {
 			type TEXT NOT NULL CHECK (type IN ('image','video')),
 			src TEXT NOT NULL,
 			thumb TEXT,
+			logo TEXT,
+			brand_name TEXT,
 			created_at TIMESTAMP NOT NULL DEFAULT NOW()
 		);
 	`;
@@ -33,6 +35,8 @@ export async function ensureSchema(): Promise<void> {
 			deleted_at TIMESTAMP
 		);
 	`;
+	await sql`ALTER TABLE portfolio_items ADD COLUMN IF NOT EXISTS logo TEXT;`;
+	await sql`ALTER TABLE portfolio_items ADD COLUMN IF NOT EXISTS brand_name TEXT;`;
 	await sql`ALTER TABLE likes ADD COLUMN IF NOT EXISTS item_deleted BOOLEAN NOT NULL DEFAULT FALSE;`;
 	await sql`ALTER TABLE likes ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP NULL;`;
 	try { await sql`ALTER TABLE likes DROP CONSTRAINT IF EXISTS likes_item_id_fkey;`; } catch {}

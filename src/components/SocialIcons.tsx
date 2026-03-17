@@ -29,7 +29,7 @@ export default function SocialIcons({
       className={`flex items-center gap-4 ${className}`}
     >
       <motion.li variants={item}>
-        <Link aria-label="Instagram" href="https://www.instagram.com/zeya__ugc/" target="_blank">
+        <Link aria-label="Instagram" href="https://www.instagram.com/zeya__sol/" target="_blank">
           <svg
             {...iconSize}
             viewBox="0 0 24 24"
