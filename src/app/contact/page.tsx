@@ -21,7 +21,7 @@ export default function ContactPage() {
     const data = new FormData(form);
 
     try {
-      const res = await fetch("/contact", {
+      const res = await fetch("/netlify-forms.html", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams(data as unknown as Record<string, string>).toString(),
@@ -171,4 +171,5 @@ export default function ContactPage() {
     </section>
   );
 }
+
 
