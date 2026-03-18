@@ -21,7 +21,7 @@ export default function ContactPage() {
     const data = new FormData(form);
 
     try {
-      const res = await fetch("/", {
+      const res = await fetch("/contact", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams(data as unknown as Record<string, string>).toString(),
@@ -171,3 +171,4 @@ export default function ContactPage() {
     </section>
   );
 }
+
