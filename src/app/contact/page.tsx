@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import SocialIcons from "@/components/SocialIcons";
@@ -24,7 +24,7 @@ export default function ContactPage() {
       const res = await fetch("/", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams(data as any).toString(),
+        body: new URLSearchParams(data as unknown as Record<string, string>).toString(),
       });
 
       if (res.ok) {
@@ -106,7 +106,7 @@ export default function ContactPage() {
         >
           <input type="hidden" name="form-name" value="contact" />
           <p className="hidden">
-            <label>Don't fill this out: <input name="bot-field" /></label>
+            <label>Do not fill this out: <input name="bot-field" /></label>
           </p>
 
           <div className="grid gap-1">
